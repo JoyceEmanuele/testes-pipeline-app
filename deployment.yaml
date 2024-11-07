@@ -1,0 +1,20 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-flux
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-flux
+  template:
+    metadata:
+      labels:
+        app: nginx-flux
+    spec:
+      containers:
+        - name: nginx-flux
+          image: nginx:latest
+          ports:
+            - containerPort: 80
