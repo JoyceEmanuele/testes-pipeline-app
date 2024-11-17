@@ -37,7 +37,7 @@ jobs:
       - name: Checkout Manifest Repository
         uses: actions/checkout@v2
         with: 
-          repository: JoyceEmanuele/testes-pipeline-app # Nome do repositório de manifestos
+          repository: JoyceEmanuele/testes-pipeline # Nome do repositório de manifestos
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Deployment Manifest
