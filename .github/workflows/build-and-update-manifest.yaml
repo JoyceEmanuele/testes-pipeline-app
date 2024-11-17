@@ -39,14 +39,14 @@ jobs:
         with: 
           repository: JoyceEmanuele/testes-pipeline-app # Nome do repositório de manifestos
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: manifest-repo
+          path: /
 
       - name: Update Deployment Manifest
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE_TAG: "v${{ github.run_number }}"
         run: |
-          sed -i "s|image: gcr.io/.*/app-teste:.*|image: gcr.io/$GCP_PROJECT_ID/app-teste:${IMAGE_TAG}|g" manifest-repo/deployment-app.yaml
+          sed -i "s|image: gcr.io/.*/app-teste:.*|image: gcr.io/$GCP_PROJECT_ID/app-teste:${IMAGE_TAG}|g" deployment-app.yaml
 
       - name: Commit and Push Manifest Update
         working-directory: manifest-repo
