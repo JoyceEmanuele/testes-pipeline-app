@@ -48,9 +48,7 @@ jobs:
           sed -i "s|image: gcr.io/.*/app-teste:.*|image: gcr.io/$GCP_PROJECT_ID/app-teste:${IMAGE_TAG}|g" deployment-app.yaml
 
       - name: Commit and Push Manifest Update
-        working-directory: testes-pipeline
         run: |
-          ls
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -am "Atualiza a imagem para a versão $IMAGE_TAG"
