@@ -26,13 +26,6 @@ jobs:
         run: |
           gcloud auth configure-docker
 
-      - name: List Manifest Repository Files
-        run: ls -R manifest-repo
-
-      - name: Check Git Status
-        working-directory: manifest-repo
-        run: git status
-
       - name: Display Deployment Manifest Before Update
         run: cat manifest-repo/deployment-app.yaml
 
@@ -50,6 +43,13 @@ jobs:
           repository: JoyceEmanuele/testes-pipeline # Nome do repositório de manifestos
           token: ${{ secrets.GITHUB_TOKEN }}
           path: manifest-repo
+
+      - name: List Manifest Repository Files
+        run: ls -R manifest-repo
+
+      - name: Check Git Status
+        working-directory: manifest-repo
+        run: git status
 
       - name: Update Deployment Manifest
         env:
