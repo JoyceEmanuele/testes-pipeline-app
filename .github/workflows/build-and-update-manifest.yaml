@@ -39,7 +39,6 @@ jobs:
         with: 
           repository: JoyceEmanuele/testes-pipeline-app # Nome do repositório de manifestos
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: /
 
       - name: Update Deployment Manifest
         env:
