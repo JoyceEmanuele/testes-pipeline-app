@@ -26,6 +26,16 @@ jobs:
         run: |
           gcloud auth configure-docker
 
+      - name: List Manifest Repository Files
+        run: ls -R manifest-repo
+
+      - name: Check Git Status
+        working-directory: manifest-repo
+        run: git status
+
+      - name: Display Deployment Manifest Before Update
+        run: cat manifest-repo/deployment-app.yaml
+
       - name: Build and Push Docker Image
         env:
           IMAGE_TAG: "v${{ github.run_number }}"  # Define a tag única para cada build
