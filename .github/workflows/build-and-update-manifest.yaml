@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v2
         with: 
           repository: JoyceEmanuele/testes-pipeline # Nome do repositório de manifestos
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GIT_TOKEN }}
           path: manifest-repo
 
       - name: List Manifest Repository Files
