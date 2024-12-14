@@ -60,7 +60,7 @@ jobs:
       - name: Checkout Manifest Repository
         uses: actions/checkout@v2
         with: 
-          repository: dielenergia/manifests-kubernetes/tree/main/apiserverr # Nome do repositório de manifestos
+          repository: dielenergia/manifests-kubernetes/tree/main/apiserver # Nome do repositório de manifestos
           token: ${{ secrets.GIT_TOKEN }}
           path: manifest-repo
 
