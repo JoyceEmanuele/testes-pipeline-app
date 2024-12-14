@@ -1,0 +1,162 @@
+import * as sqldb from '../connectSql'
+import { saveOperationLog, OperationLogData } from '../dbModifLog'
+import { dbLogger } from '../../../srcCommon/helpers/logger'
+
+/* @IFHELPER:FUNC w_deleteFromDeviceCode = DELETE
+  PARAM DEVICE_CODE: {DEVICES.DEVICE_CODE}
+  FROM LEAK_ANALYSIS
+  WHERE {DEVICES.DEVICE_CODE} = {:DEVICE_CODE}
+*/
+export async function w_deleteFromDeviceCode (qPars: { DEVICE_CODE: string}, operationLogData: OperationLogData) {
+
+  const join = 
+  ` INNER JOIN DMAS_DEVICES ON (DMAS_DEVICES.LEAK_ANALYSIS_ID = LEAK_ANALYSIS.ID)
+    INNER JOIN DEVICES ON (DEVICES.ID = DMAS_DEVICES.DEVICE_ID)
+  `;
+
+  const sentence = `DELETE LEAK_ANALYSIS FROM LEAK_ANALYSIS ${join} WHERE DEVICES.DEVICE_CODE = :DEVICE_CODE`;
+
+  if (operationLogData) {
+    await saveOperationLog('LEAK_ANALYSIS', sentence, qPars, operationLogData);
+    dbLogger('LEAK_ANALYSIS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC deleteRow = DELETE
+  PARAM ID: {LEAK_ANALYSIS.ID}
+  FROM LEAK_ANALYSIS
+  WHERE {LEAK_ANALYSIS.ID} = {:ID}
+*/
+export async function w_deleteRow (qPars: { ID: number}, operationLogData: OperationLogData) {
+
+  const sentence = `DELETE FROM LEAK_ANALYSIS WHERE LEAK_ANALYSIS.ID = :ID`;
+
+  if (operationLogData) {
+    await saveOperationLog('LEAK_ANALYSIS', sentence, qPars, operationLogData);
+    dbLogger('LEAK_ANALYSIS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC insert = INSERT
+  FROM LEAK_ANALYSIS
+  FIELD [[IFOWNPROP {:LEAK_ANALYSIS}]] LEAK_ANALYSIS.LEAK_ANALYSIS
+  FIELD [[IFOWNPROP {:CONTINUOUS_CONSUMPTION}]] LEAK_ANALYSIS.CONTINUOUS_CONSUMPTION
+  FIELD [[IFOWNPROP {:CONTINUOUS_CONSUMPTION_TIME_INTERVAL}]] LEAK_ANALYSIS.CONTINUOUS_CONSUMPTION_TIME_INTERVAL
+  FIELD [[IFOWNPROP {:CONTINUOUS_CONSUMPTION_MIN_VALUE}]] LEAK_ANALYSIS.CONTINUOUS_CONSUMPTION_MIN_VALUE
+  FIELD [[IFOWNPROP {:HISTORY_CONSUMPTION}]] LEAK_ANALYSIS.HISTORY_CONSUMPTION
+  FIELD [[IFOWNPROP {:HISTORY_CONSUMPTION_TIMES}]] LEAK_ANALYSIS.HISTORY_CONSUMPTION_TIMES
+  FIELD [[IFOWNPROP {:CAPACITY_CONSUMPTION}]] LEAK_ANALYSIS.CAPACITY_CONSUMPTION
+  FIELD [[IFOWNPROP {:CAPACITY_CONSUMPTION_TIMES}]] LEAK_ANALYSIS.CAPACITY_CONSUMPTION_TIMES
+
+*/
+export async function w_insert (qPars: {   
+  LEAK_ANALYSIS: boolean,
+  CONTINUOUS_CONSUMPTION: boolean,
+  CONTINUOUS_CONSUMPTION_TIME_INTERVAL: number,
+  CONTINUOUS_CONSUMPTION_MIN_VALUE: number,
+  HISTORY_CONSUMPTION: boolean,
+  HISTORY_CONSUMPTION_TIMES: number,
+  CAPACITY_CONSUMPTION: boolean,
+  CAPACITY_CONSUMPTION_TIMES: number 
+},operationLogData: OperationLogData) {
+  const fields: string[] = []
+  fields.push('LEAK_ANALYSIS') 
+  fields.push('CONTINUOUS_CONSUMPTION') 
+  fields.push('CONTINUOUS_CONSUMPTION_TIME_INTERVAL') 
+  fields.push('CONTINUOUS_CONSUMPTION_MIN_VALUE') 
+  fields.push('HISTORY_CONSUMPTION') 
+  fields.push('HISTORY_CONSUMPTION_TIMES') 
+  fields.push('CAPACITY_CONSUMPTION') 
+  fields.push('CAPACITY_CONSUMPTION_TIMES') 
+
+  const sentence = `INSERT INTO LEAK_ANALYSIS (${fields.join(', ')}) VALUES (:${fields.join(', :')})`
+
+  if (operationLogData) {
+    await saveOperationLog('LEAK_ANALYSIS', sentence, qPars, operationLogData);
+    dbLogger('LEAK_ANALYSIS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC update = UPDATE
+  PARAM WHERE DEVICES.DEVICE_CODE: {:DEVICE_CODE}
+
+  FROM LEAK_ANALYSIS
+  FIELD [[IFOWNPROP {:LEAK_ANALYSIS}]] LEAK_ANALYSIS.LEAK_ANALYSIS
+  FIELD [[IFOWNPROP {:CONTINUOUS_CONSUMPTION}]] LEAK_ANALYSIS.CONTINUOUS_CONSUMPTION
+  FIELD [[IFOWNPROP {:CONTINUOUS_CONSUMPTION_TIME_INTERVAL}]] LEAK_ANALYSIS.CONTINUOUS_CONSUMPTION_TIME_INTERVAL
+  FIELD [[IFOWNPROP {:CONTINUOUS_CONSUMPTION_MIN_VALUE}]] LEAK_ANALYSIS.CONTINUOUS_CONSUMPTION_MIN_VALUE
+  FIELD [[IFOWNPROP {:HISTORY_CONSUMPTION}]] LEAK_ANALYSIS.HISTORY_CONSUMPTION
+  FIELD [[IFOWNPROP {:HISTORY_CONSUMPTION_TIMES}]] LEAK_ANALYSIS.HISTORY_CONSUMPTION_TIMES
+  FIELD [[IFOWNPROP {:CAPACITY_CONSUMPTION}]] LEAK_ANALYSIS.CAPACITY_CONSUMPTION
+  FIELD [[IFOWNPROP {:CAPACITY_CONSUMPTION_TIMES}]] LEAK_ANALYSIS.CAPACITY_CONSUMPTION_TIMES
+*/
+export async function w_update (qPars: {
+  DEVICE_CODE: string,
+  LEAK_ANALYSIS?: boolean,
+  CONTINUOUS_CONSUMPTION?: boolean,
+  CONTINUOUS_CONSUMPTION_TIME_INTERVAL?: number,
+  CONTINUOUS_CONSUMPTION_MIN_VALUE?: number,
+  HISTORY_CONSUMPTION?: boolean,
+  HISTORY_CONSUMPTION_TIMES?: number,
+  CAPACITY_CONSUMPTION?: boolean,
+  CAPACITY_CONSUMPTION_TIMES?: number
+}, operationLogData: OperationLogData) {
+  const fields: string[] = []
+
+  if (qPars.LEAK_ANALYSIS !== undefined) { fields.push('LEAK_ANALYSIS = :LEAK_ANALYSIS') }
+  if (qPars.CONTINUOUS_CONSUMPTION !== undefined) { fields.push('CONTINUOUS_CONSUMPTION = :CONTINUOUS_CONSUMPTION') }
+  if (qPars.CONTINUOUS_CONSUMPTION_TIME_INTERVAL !== undefined) { fields.push('CONTINUOUS_CONSUMPTION_TIME_INTERVAL = :CONTINUOUS_CONSUMPTION_TIME_INTERVAL') }
+  if (qPars.CONTINUOUS_CONSUMPTION_MIN_VALUE !== undefined) { fields.push('CONTINUOUS_CONSUMPTION_MIN_VALUE = :CONTINUOUS_CONSUMPTION_MIN_VALUE') }
+  if (qPars.HISTORY_CONSUMPTION !== undefined) { fields.push('HISTORY_CONSUMPTION = :HISTORY_CONSUMPTION') }
+  if (qPars.HISTORY_CONSUMPTION_TIMES !== undefined) { fields.push('HISTORY_CONSUMPTION_TIMES = :HISTORY_CONSUMPTION_TIMES') }
+  if (qPars.CAPACITY_CONSUMPTION !== undefined) { fields.push('CAPACITY_CONSUMPTION = :CAPACITY_CONSUMPTION') }
+  if (qPars.CAPACITY_CONSUMPTION_TIMES !== undefined) { fields.push('CAPACITY_CONSUMPTION_TIMES = :CAPACITY_CONSUMPTION_TIMES') }
+
+  if (!fields.length) throw Error('No fields to update').HttpStatus(500).DebugInfo({ qPars })
+
+  const join = ` 
+    INNER JOIN DMAS_DEVICES ON (DMAS_DEVICES.LEAK_ANALYSIS_ID = LEAK_ANALYSIS.ID)
+    INNER JOIN DEVICES ON (DEVICES.ID = DMAS_DEVICES.DEVICE_ID)
+`;
+
+  let sentence = `UPDATE LEAK_ANALYSIS ${join} SET ${fields.join(', ')} WHERE DEVICES.DEVICE_CODE = :DEVICE_CODE`
+
+  if (operationLogData) {
+    await saveOperationLog('LEAK_ANALYSIS', sentence, qPars, operationLogData);
+    dbLogger('LEAK_ANALYSIS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC getLeakAnalysisIdByDevice = SELECT ROW
+  PARAM UNIT_ID: {DEVICES.DEVICE_CODE.DEVICE_CODE}
+
+  FROM LEAK_ANALYSIS
+  SELECT LEAK_ANALYSIS.ID
+
+  INNER JOIN DMAS_DEVICES ON (DMAS_DEVICES.LEAK_ANALYSIS_ID = LEAK_ANALYSIS.ID)
+  INNER JOIN DEVICES ON (DEVICES.ID = DMAS_DEVICES.DEVICE_ID) 
+
+  WHERE {DEVICES.DEVICE_CODE} = {:DEVICE_CODE}
+*/
+export function getLeakAnalysisIdByDevice (qPars: { DEVICE_CODE: string }) {
+  let sentence = `
+    SELECT
+      LEAK_ANALYSIS.ID 
+    FROM
+      LEAK_ANALYSIS
+      INNER JOIN DMAS_DEVICES ON (DMAS_DEVICES.LEAK_ANALYSIS_ID = LEAK_ANALYSIS.ID)
+      INNER JOIN DEVICES ON (DEVICES.ID = DMAS_DEVICES.DEVICE_ID)
+    WHERE DEVICES.DEVICE_CODE = :DEVICE_CODE `
+
+  return sqldb.querySingle<{
+    ID: number
+  }>(sentence, qPars)
+}

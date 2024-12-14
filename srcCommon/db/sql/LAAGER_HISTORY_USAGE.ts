@@ -1,0 +1,212 @@
+import * as sqldb from '../connectSql'
+import { OperationLogData, saveOperationLog } from '../dbModifLog'
+import { dbLogger } from '../../helpers/logger'
+// @IFHELPER:CONFIG DISABLE_MODIF_LOG
+
+/* @IFHELPER:FUNC insert = INSERT
+  FROM LAAGER_HISTORY_USAGE
+  FIELD LAAGER_HISTORY_USAGE.LAAGER_ID
+  FIELD LAAGER_HISTORY_USAGE.RECORD_DATE
+  FIELD LAAGER_HISTORY_USAGE.DAY_USAGE
+  FIELD LAAGER_HISTORY_USAGE.DAY_READING
+  FIELD LAAGER_HISTORY_USAGE.ESTIMATED_USAGE
+*/
+export function w_insert (qPars: { LAAGER_CODE: string, RECORD_DATE: string, DAY_USAGE: number, DAY_READING: number, ESTIMATED_USAGE: boolean}) {
+  const fields: string[] = []
+  fields.push('LAAGER_ID')
+  fields.push('RECORD_DATE')
+  fields.push('DAY_USAGE')
+  fields.push('DAY_READING')
+  fields.push('ESTIMATED_USAGE')
+
+  let sentence = `INSERT INTO LAAGER_HISTORY_USAGE (${fields.join(', ')})`
+
+  sentence += `
+    SELECT 
+      LAAGER.ID,
+      :RECORD_DATE,
+      :DAY_USAGE,
+      :DAY_READING,
+      :ESTIMATED_USAGE
+    FROM LAAGER
+    WHERE LAAGER.LAAGER_CODE = :LAAGER_CODE  
+  `
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC updateInfo = UPDATE
+  FROM LAAGER_HISTORY_USAGE
+  PARAM LAAGER_CODE: {LAAGER.LAAGER_CODE}
+  PARAM RECORD_DATE: {LAAGER_HISTORY_USAGE.RECORD_DATE}
+  PARAM DAY_USAGE: {LAAGER_HISTORY_USAGE.DAY_USAGE}
+  PARAM DAY_READING: {LAAGER_HISTORY_USAGE.DAY_READING}
+  PARAM ESTIMATED_USAGE: {LAAGER_HISTORY_USAGE.ESTIMATED_USAGE}
+  FIELD LAAGER_HISTORY_USAGE.DAY_USAGE
+  FIELD LAAGER_HISTORY_USAGE.DAY_READING
+  FIELD LAAGER_HISTORY_USAGE.ESTIMATED_USAGE
+*/
+export function w_updateInfo (qPars: { LAAGER_CODE: string, RECORD_DATE: string, DAY_USAGE: number, DAY_READING: number, ESTIMATED_USAGE: boolean}) {
+  const join = "INNER JOIN LAAGER ON (LAAGER_HISTORY_USAGE.LAAGER_ID = LAAGER.ID)";
+
+  const fields: string[] = []
+  fields.push("DAY_USAGE = :DAY_USAGE")
+  fields.push("DAY_READING = :DAY_READING")
+  fields.push("ESTIMATED_USAGE = :ESTIMATED_USAGE")
+
+  const sentence = `UPDATE LAAGER_HISTORY_USAGE ${join} SET ${fields.join(', ')} WHERE RECORD_DATE = :RECORD_DATE AND LAAGER.LAAGER_CODE = :LAAGER_CODE`
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC w_deleteRow = DELETE
+  PARAM LAAGER_CODE: {LAAGER.LAAGER_CODE}
+  PARAM RECORD_DATE: {LAAGER_HISTORY_USAGE.RECORD_DATE}
+  FROM LAAGER_HISTORY_USAGE
+  INNER JOIN LAAGER ON (LAAGER_HISTORY_USAGE.LAAGER_ID = LAAGER.ID)
+  WHERE {LAAGER.LAAGER_CODE} = {:LAAGER_CODE}
+  WHERE {LAAGER_HISTORY_USAGE.RECORD_DATE} = {:RECORD_DATE}
+*/
+export function w_deleteRow (qPars: { LAAGER_CODE: string, RECORD_DATE: string }) {
+
+  const join = ` 
+    INNER JOIN LAAGER ON (LAAGER_HISTORY_USAGE.LAAGER_ID = LAAGER.ID)
+`;
+
+  const sentence = `DELETE LAAGER_HISTORY_USAGE FROM LAAGER_HISTORY_USAGE ${join} WHERE LAAGER.LAAGER_CODE = :LAAGER_CODE AND LAAGER_HISTORY_USAGE.RECORD_DATE = :RECORD_DATE`;
+
+  return sqldb.execute(sentence, qPars)
+}
+/* @IFHELPER:FUNC deleteFromUnit = DELETE
+  PARAM UNIT_ID: {WATERS.UNIT_ID}
+  FROM LAAGER_HISTORY_USAGE
+  INNER JOIN LAAGER ON (LAAGER_HISTORY_USAGE.LAAGER_ID = LAAGER.ID)
+  INNER JOIN WATERS ON (LAAGER.WATER_ID = WATERS.ID)
+  WHERE {WATERS.UNIT_ID} = {:UNIT_ID}
+*/
+export async function w_deleteFromUnit (qPars: { UNIT_ID: number }, operationLogData: OperationLogData) {
+
+  const join = ` 
+    INNER JOIN LAAGER ON (LAAGER_HISTORY_USAGE.LAAGER_ID = LAAGER.ID)
+    INNER JOIN WATERS ON (LAAGER.WATER_ID = WATERS.ID)
+`;
+
+  const sentence = `DELETE LAAGER_HISTORY_USAGE FROM LAAGER_HISTORY_USAGE ${join} WHERE WATERS.UNIT_ID = :UNIT_ID`;
+
+  if (operationLogData) {
+    await saveOperationLog('LAAGER_HISTORY_USAGE', sentence, qPars, operationLogData);
+    dbLogger('LAAGER_HISTORY_USAGE', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC deleteFromClient = DELETE
+  PARAM CLIENT_ID: {WATERS.CLIENT_ID}
+  FROM LAAGER_HISTORY_USAGE
+  INNER JOIN LAAGER ON (LAAGER_HISTORY_USAGE.LAAGER_ID = LAAGER.ID)
+  INNER JOIN WATERS ON (LAAGER.WATER_ID = WATERS.ID)
+  INNER JOIN CLUNITS ON (WATERS.UNIT_ID = CLUNITS.UNIT_ID)
+  WHERE {WATERS.CLIENT_ID} = {:CLIENT_ID}
+*/
+export async function w_deleteFromClient (qPars: { CLIENT_ID: number }, operationLogData: OperationLogData) {
+
+  const join = ` 
+    INNER JOIN LAAGER ON (LAAGER_HISTORY_USAGE.LAAGER_ID = LAAGER.ID)
+    INNER JOIN WATERS ON (LAAGER.WATER_ID = WATERS.ID)
+    INNER JOIN CLUNITS ON (WATERS.UNIT_ID = CLUNITS.UNIT_ID)
+`;
+
+  const sentence = `DELETE LAAGER_HISTORY_USAGE FROM LAAGER_HISTORY_USAGE ${join} WHERE CLUNITS.CLIENT_ID = :CLIENT_ID`;
+  
+  if (operationLogData) {
+    await saveOperationLog('LAAGER_HISTORY_USAGE', sentence, qPars, operationLogData);
+    dbLogger('LAAGER_HISTORY_USAGE', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC getLastData = SELECT ROW
+  PARAM LAAGER_CODE: {LAAGER.LAAGER_CODE}
+
+  FROM LAAGER_HISTORY_USAGE
+
+  SELECT LAAGER.LAAGER_CODE
+  SELECT LAAGER_HISTORY_USAGE.RECORD_DATE
+
+  WHERE {LAAGER.LAAGER_CODE} = {:LAAGER_CODE}
+
+  ORDER BY LAAGER_HISTORY_USAGE.RECORD_DATE DESC
+  LIMIT 1 OFFSET 0
+*/
+export function getLastData (qPars: { LAAGER_CODE: string }) {
+  let sentence = `
+    SELECT
+      LAAGER.LAAGER_CODE,
+      LAAGER_HISTORY_USAGE.RECORD_DATE
+  `
+  sentence += `
+    FROM
+      LAAGER_HISTORY_USAGE
+    INNER JOIN LAAGER ON (LAAGER_HISTORY_USAGE.LAAGER_ID = LAAGER.ID)
+  `
+
+  sentence += ` WHERE LAAGER.LAAGER_CODE = :LAAGER_CODE `
+
+  sentence += ` ORDER BY LAAGER_HISTORY_USAGE.RECORD_DATE DESC `
+  sentence += ` LIMIT 0,1 `
+
+  return sqldb.querySingle<{
+    LAAGER_CODE: string
+    RECORD_DATE: string
+  }>(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC getExtraInfo = SELECT LIST
+  PARAM LAAGER_CODE: {LAAGER_HISTORY_USAGE.LAAGER_CODE}
+  PARAM start_date: {LAAGER_HISTORY_USAGE.RECORD_DATE}
+  PARAM end_date: {LAAGER_HISTORY_USAGE.RECORD_DATE}
+
+  FROM LAAGER_HISTORY_USAGE
+
+  SELECT LAAGER_HISTORY_USAGE.LAAGER_CODE
+  SELECT LAAGER_HISTORY_USAGE.RECORD_DATE
+  SELECT LAAGER_HISTORY_USAGE.DAY_USAGE
+  SELECT LAAGER_HISTORY_USAGE.DAY_READING
+  SELECT LAAGER_HISTORY_USAGE.ESTIMATED_USAGE
+
+
+  WHERE {LAAGER_HISTORY_USAGE.LAAGER_CODE} = {:LAAGER_CODE}
+  WHERE {LAAGER_HISTORY_USAGE.RECORD_DATE} >= {:start_date}
+  WHERE {LAAGER_HISTORY_USAGE.RECORD_DATE} <= {:end_date}
+*/
+export function getExtraInfo (qPars: { LAAGER_CODE: string, start_date: string, end_date: string }) {
+  let sentence = `
+    SELECT
+      LAAGER.LAAGER_CODE,
+      LAAGER_HISTORY_USAGE.RECORD_DATE,
+      LAAGER_HISTORY_USAGE.DAY_USAGE,
+      LAAGER_HISTORY_USAGE.DAY_READING,
+      LAAGER_HISTORY_USAGE.ESTIMATED_USAGE
+  `
+  sentence += `
+    FROM
+      LAAGER_HISTORY_USAGE
+    INNER JOIN LAAGER ON (LAAGER_HISTORY_USAGE.LAAGER_ID = LAAGER.ID)
+  `
+
+  const conditions: string[] = []
+  conditions.push(`LAAGER.LAAGER_CODE = :LAAGER_CODE`)
+  conditions.push(`LAAGER_HISTORY_USAGE.RECORD_DATE >= :start_date`)
+  conditions.push(`LAAGER_HISTORY_USAGE.RECORD_DATE <= :end_date`)
+  sentence += ' WHERE ' + conditions.join(' AND ')
+
+  return sqldb.query<{
+    LAAGER_CODE: string
+    RECORD_DATE: string
+    DAY_USAGE: number
+    DAY_READING: number
+    ESTIMATED_USAGE: boolean
+  }>(sentence, qPars)
+}

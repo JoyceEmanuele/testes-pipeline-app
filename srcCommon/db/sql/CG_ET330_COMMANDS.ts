@@ -1,0 +1,63 @@
+import * as sqldb from '../connectSql'
+import { saveOperationLog, OperationLogData } from '../dbModifLog'
+import { dbLogger } from '../../../srcCommon/helpers/logger'
+
+/* @IFHELPER:FUNC getCommandsList = SELECT
+
+  FROM CG_ET330_COMMANDS
+
+  SELECT CG_ET330_COMMANDS.COMMAND,
+  SELECT CG_ET330_COMMANDS.SYS_ID,
+  SELECT CG_ET330_COMMANDS.ADDRESS,
+  SELECT CG_ET330_COMMANDS.DESCRIPTION,
+  SELECT CG_ET330_COMMANDS.IP,
+  SELECT CG_ET330_COMMANDS.ID,
+  SELECT CG_ET330_COMMANDS.SIZE,
+  SELECT CG_ET330_COMMANDS.FUNC_ID,
+  SELECT CG_ET330_COMMANDS.R_W,
+  SELECT CG_ET330_COMMANDS.UNIT,
+  SELECT CG_ET330_COMMANDS.FORMULA,
+  SELECT CG_ET330_COMMANDS.ALIAS,
+  SELECT CG_ET330_COMMANDS.HAS_SIGNAL
+*/
+export function getCommandsList (qPars: {
+}) {
+  let sentence = `
+    SELECT
+    CG_ET330_COMMANDS.COMMAND,
+    CG_ET330_COMMANDS.SYS_ID,
+    CG_ET330_COMMANDS.ADDRESS,
+    CG_ET330_COMMANDS.DESCRIPTION,
+    CG_ET330_COMMANDS.IP,
+    CG_ET330_COMMANDS.ID,
+    CG_ET330_COMMANDS.SIZE,
+    CG_ET330_COMMANDS.FUNC_ID,
+    CG_ET330_COMMANDS.R_W,
+    CG_ET330_COMMANDS.UNIT,
+    CG_ET330_COMMANDS.FORMULA,
+    CG_ET330_COMMANDS.ALIAS,
+    CG_ET330_COMMANDS.HAS_SIGNAL
+  `
+
+  sentence += `
+    FROM
+      CG_ET330_COMMANDS
+    ORDER BY CAST(SUBSTRING(COMMAND, 4, 3) AS UNSIGNED)
+  `
+
+  return sqldb.query<{
+    COMMAND: string
+    SYS_ID: number
+    ADDRESS: number
+    DESCRIPTION: string
+    IP: string
+    ID: number
+    SIZE: number
+    FUNC_ID: number
+    R_W: string
+    UNIT: string
+    FORMULA: string
+    ALIAS: string
+    HAS_SIGNAL: string
+  }>(sentence, qPars)
+}

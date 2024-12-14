@@ -1,0 +1,575 @@
+import * as sqldb from '../connectSql'
+import { saveOperationLog, OperationLogData } from '../dbModifLog'
+import { dbLogger } from '../../helpers/logger'
+
+/* @IFHELPER:FUNC insertIgnore = INSERT
+  FROM ILLUMINATIONS
+*/
+export async function w_insert (qPars: {
+  UNIT_ID: number
+  NAME?: string
+  GRID_VOLTAGE?: number
+  GRID_CURRENT?: number
+}, operationLogData: OperationLogData) {
+  const fields: string[] = []
+  fields.push('UNIT_ID')
+  if (qPars.NAME != null) { fields.push('NAME') }
+  if (qPars.GRID_VOLTAGE != null) { fields.push('GRID_VOLTAGE') }
+  if (qPars.GRID_CURRENT != null) { fields.push('GRID_CURRENT') }
+  if (!fields.length) throw Error('No fields to insert').HttpStatus(500).DebugInfo({ qPars })
+
+  const sentence = `INSERT INTO ILLUMINATIONS (${fields.join(', ')}) VALUES (:${fields.join(', :')})`
+
+  if (operationLogData) {
+    await saveOperationLog('ILLUMINATIONS', sentence, qPars, operationLogData);
+    dbLogger('ILLUMINATIONS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC updateInfo = UPDATE
+  FROM ILLUMINATIONS
+  PARAM ID: {ILLUMINATIONS.ID}
+*/
+export async function w_updateInfo (
+  qPars: {
+    ID: number
+    UNIT_ID?: number
+    NAME?: string
+    GRID_VOLTAGE?: number
+    GRID_CURRENT?: number
+  }, operationLogData: OperationLogData
+) {
+  const fields: string[] = []
+  if (qPars.UNIT_ID !== undefined) { fields.push('UNIT_ID = :UNIT_ID') }
+  if (qPars.NAME !== undefined) { fields.push('NAME = :NAME') }
+  if (qPars.GRID_VOLTAGE !== undefined) { fields.push('GRID_VOLTAGE = :GRID_VOLTAGE') }
+  if (qPars.GRID_CURRENT !== undefined) { fields.push('GRID_CURRENT = :GRID_CURRENT') }
+  if (!fields.length) throw Error('No fields to update').HttpStatus(500).DebugInfo({ qPars })
+
+  const sentence = `UPDATE ILLUMINATIONS SET ${fields.join(', ')} WHERE ID = :ID`
+
+  if (operationLogData) {
+    await saveOperationLog('ILLUMINATIONS', sentence, qPars, operationLogData);
+    dbLogger('ILLUMINATIONS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC delete = DELETE
+  PARAM ID: {ILLUMINATIONS.ID}
+  FROM ILLUMINATIONS
+  WHERE {ILLUMINATIONS.ID} = {:ID}
+*/
+export async function w_delete (qPars: { ID: number }, operationLogData: OperationLogData) {
+
+  const sentence = `DELETE FROM ILLUMINATIONS WHERE ILLUMINATIONS.ID = :ID`;
+
+  if (operationLogData) {
+    await saveOperationLog('ILLUMINATIONS', sentence, qPars, operationLogData);
+    dbLogger('ILLUMINATIONS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+export async function w_deleteFromClientIllumination (qPars: { CLIENT_ID: number}, operationLogData: OperationLogData) {
+  const join = ` INNER JOIN CLUNITS ON (CLUNITS.UNIT_ID = ILLUMINATIONS.UNIT_ID)`;
+
+  const sentence = `DELETE ILLUMINATIONS FROM ILLUMINATIONS ${join} WHERE CLUNITS.CLIENT_ID = :CLIENT_ID`;
+
+  if (operationLogData) {
+    await saveOperationLog('ILLUMINATIONS', sentence, qPars, operationLogData);
+    dbLogger('ILLUMINATIONS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+export async function w_deleteFromUnitIllumination (qPars: { UNIT_ID: number}, operationLogData: OperationLogData) {
+  const sentence = `DELETE FROM ILLUMINATIONS WHERE ILLUMINATIONS.UNIT_ID = :UNIT_ID`;
+
+  if (operationLogData) {
+    await saveOperationLog('ILLUMINATIONS', sentence, qPars, operationLogData);
+    dbLogger('ILLUMINATIONS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC getIllumination = SELECT DISTINCT
+  PARAM ID: {ILLUMINATION.ID}
+  FROM ILLUMINATIONS
+    LEFT JOIN DALS_ILLUMINATIONS ON (DALS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+    LEFT JOIN DALS ON (DALS_ILLUMINATIONS.DAL_ID = DALS.ID)
+    LEFT JOIN DMTS_ILLUMINATIONS ON (DMTS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+    LEFT JOIN DMTS ON (DMTS_ILLUMINATIONS.DMT_ID = DMTS.ID)
+    LEFT JOIN DEVICES as dDAL ON (DALS.DEVICE_ID = dDAL.ID)
+    LEFT JOIN DEVICES as dDMT ON (DMTS.DEVICE_ID = dDMT.ID)
+
+    SELECT ILLUMINATIONS.ID,
+    SELECT ILLUMINATIONS.NAME,
+    SELECT ILLUMINATIONS.GRID_VOLTAGE,
+    SELECT ILLUMINATIONS.GRID_CURRENT,
+    SELECT DALS_ILLUMINATIONS.DAL_ID,
+    SELECT DALS_ILLUMINATIONS.PORT as DAL_PORT,
+    SELECT DALS_ILLUMINATIONS.FEEDBACK,
+    SELECT DMTS_ILLUMINATIONS.PORT as DMT_PORT,
+    SELECT DMTS_ILLUMINATIONS.DMT_ID,
+    SELECT dDAL.DEVICE_CODE AS DAL_CODE,
+    SELECT dDMT.DEVICE_CODE AS DMT_CODE
+
+  WHERE {ILLUMINATIONS.ID} = ({:ID})
+*/
+export function getIllumination (qPars: { ID: number }) {
+  let sentence = `
+    SELECT DISTINCT
+      ILLUMINATIONS.ID,
+      ILLUMINATIONS.NAME,
+      ILLUMINATIONS.UNIT_ID,
+      ILLUMINATIONS.GRID_VOLTAGE,
+      ILLUMINATIONS.GRID_CURRENT,
+      DALS_ILLUMINATIONS.DAL_ID,
+      DALS_ILLUMINATIONS.PORT as DAL_PORT,
+      DALS_ILLUMINATIONS.FEEDBACK,
+      DMTS_ILLUMINATIONS.PORT as DMT_PORT,
+      DMTS_ILLUMINATIONS.DMT_ID,
+      DAMS_ILLUMINATIONS.DAM_DEVICE_ID AS DAM_ILLUMINATION_ID,
+      dDAL.DEVICE_CODE AS DAL_CODE,
+      dDMT.DEVICE_CODE AS DMT_CODE,
+      dDAM.DEVICE_CODE AS DAM_ILLUMINATION_CODE,
+      DALS_ILLUMINATIONS.DEFAULT_MODE 
+  `
+  sentence += `
+    FROM
+      ILLUMINATIONS
+      LEFT JOIN DALS_ILLUMINATIONS ON (DALS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DALS ON (DALS_ILLUMINATIONS.DAL_ID = DALS.ID)
+      LEFT JOIN DMTS_ILLUMINATIONS ON (DMTS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DMTS ON (DMTS_ILLUMINATIONS.DMT_ID = DMTS.ID)
+      LEFT JOIN DAMS_ILLUMINATIONS ON (DAMS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DAMS_DEVICES ON (DAMS_ILLUMINATIONS.DAM_DEVICE_ID = DAMS_DEVICES.ID)
+      LEFT JOIN DEVICES as dDAL ON (DALS.DEVICE_ID = dDAL.ID)
+      LEFT JOIN DEVICES as dDMT ON (DMTS.DEVICE_ID = dDMT.ID)
+      LEFT JOIN DEVICES as dDAM ON (DAMS_DEVICES.DEVICE_ID = dDAM.ID)
+    WHERE
+      ILLUMINATIONS.ID = :ID
+  `;
+
+  return sqldb.querySingle<{
+    ID: number
+    NAME: string
+    UNIT_ID: number
+    GRID_VOLTAGE: number
+    GRID_CURRENT: number
+    DAL_ID: number
+    DAL_CODE: string
+    DMT_ID: number
+    DMT_CODE: string
+    DAM_ILLUMINATION_ID: number
+    DAM_ILLUMINATION_CODE: string
+    DAL_PORT: number
+    DMT_PORT: number
+    FEEDBACK: number
+    DEFAULT_MODE: string
+  }>(sentence, qPars)
+}
+
+export function getIllumInfoList (qPars: {
+  clientIds?: number[],
+  unitIds?: number[],
+  INCLUDE_INSTALLATION_UNIT?: boolean,
+  stateIds?: string[],
+  cityIds?: string[],
+}) {
+  let sentence = `
+    SELECT DISTINCT
+      ILLUMINATIONS.ID,
+      ILLUMINATIONS.UNIT_ID,
+      ILLUMINATIONS.NAME,
+      ILLUMINATIONS.GRID_VOLTAGE,
+      ILLUMINATIONS.GRID_CURRENT,
+      DALS_ILLUMINATIONS.PORT AS DAL_PORT,
+      DALS_ILLUMINATIONS.FEEDBACK,
+      DMTS_ILLUMINATIONS.PORT AS DMT_PORT,
+      CLUNITS.UNIT_NAME,
+      dDAL.DEVICE_CODE AS DAL_CODE,
+      dDMT.DEVICE_CODE AS DMT_CODE,
+      dDAM.DEVICE_CODE AS DAM_ILLUMINATION_CODE,
+      CLIENTS.NAME AS CLIENT_NAME,
+      CITY.NAME AS CITY_NAME,
+      STATEREGION.NAME AS STATE_UF,
+      CLIENTS.CLIENT_ID
+  `
+  sentence += `
+    FROM
+      ILLUMINATIONS
+      LEFT JOIN DALS_ILLUMINATIONS ON (DALS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DALS ON (DALS_ILLUMINATIONS.DAL_ID = DALS.ID)
+      LEFT JOIN DMTS_ILLUMINATIONS ON (DMTS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DMTS ON (DMTS_ILLUMINATIONS.DMT_ID = DMTS.ID)
+      LEFT JOIN DAMS_ILLUMINATIONS ON (DAMS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DAMS_DEVICES ON (DAMS_ILLUMINATIONS.DAM_DEVICE_ID = DAMS_DEVICES.ID)
+      LEFT JOIN DEVICES as dDAL ON (DALS.DEVICE_ID = dDAL.ID)
+      LEFT JOIN DEVICES as dDMT ON (DMTS.DEVICE_ID = dDMT.ID)
+      LEFT JOIN DEVICES as dDAM ON (DAMS_DEVICES.DEVICE_ID = dDAM.ID)
+      LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ILLUMINATIONS.UNIT_ID)
+      LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+      LEFT JOIN CITY ON (CLUNITS.CITY_ID = CITY.CITY_ID)
+      LEFT JOIN STATEREGION ON (CITY.STATE_ID = STATEREGION.ID)
+  `
+
+  const conditions: string[] = []
+  if (qPars.clientIds) { conditions.push(`CLIENTS.CLIENT_ID IN (:clientIds)`) }
+  if (qPars.unitIds) { conditions.push(`CLUNITS.UNIT_ID IN (:unitIds)`) }
+  if (qPars.INCLUDE_INSTALLATION_UNIT === false) { conditions.push(`CLUNITS.PRODUCTION = 1`) }
+  if (qPars.stateIds) { conditions.push(`STATEREGION.ID IN (:stateIds)`) }
+  if (qPars.cityIds) { conditions.push(`CLUNITS.CITY_ID IN (:cityIds)`) }
+  if (conditions.length) { sentence += ' WHERE ' + conditions.join(' AND ') }
+
+  return sqldb.query<{
+    ID: number
+    UNIT_ID: number
+    DAL_CODE: string
+    DMT_CODE: string
+    DAM_ILLUMINATION_CODE: string
+    NAME: string
+    GRID_VOLTAGE: number
+    GRID_CURRENT: number
+    DAL_PORT: number
+    DMT_PORT: number
+    FEEDBACK: number
+    UNIT_NAME: string
+    CLIENT_NAME: string
+    CITY_NAME: string
+    STATE_UF: string
+    CLIENT_ID: number
+  }>(sentence, qPars)
+}
+
+export function getIllumInfoListWithoutDmt (qPars: { clientIds?: number[], unitIds?: number[], INCLUDE_INSTALLATION_UNIT?: boolean }) {
+  let sentence = `
+    SELECT DISTINCT
+      ILLUMINATIONS.ID AS ILLUMINATION_ID,
+      COALESCE(DALS_ILLUMINATIONS.ID, DAMS_ILLUMINATIONS.ID) AS ILLUM_DEV_ID,
+      ILLUMINATIONS.UNIT_ID,
+      ILLUMINATIONS.NAME,
+      ILLUMINATIONS.GRID_VOLTAGE,
+      ILLUMINATIONS.GRID_CURRENT,
+      DALS_ILLUMINATIONS.PORT AS DAL_PORT,
+      DALS_ILLUMINATIONS.FEEDBACK,
+      CLUNITS.UNIT_NAME,
+      dDAL.DEVICE_CODE AS DAL_CODE,
+      dDAM.DEVICE_CODE AS DAM_ILLUMINATION_CODE,
+      CLIENTS.NAME AS CLIENT_NAME,
+      CITY.NAME AS CITY_NAME,
+      STATEREGION.NAME AS STATE_UF,
+      CLIENTS.CLIENT_ID
+  `
+  sentence += `
+    FROM
+      ILLUMINATIONS
+      LEFT JOIN DALS_ILLUMINATIONS ON (DALS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DALS ON (DALS_ILLUMINATIONS.DAL_ID = DALS.ID)
+      LEFT JOIN DAMS_ILLUMINATIONS ON (DAMS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DAMS_DEVICES ON (DAMS_ILLUMINATIONS.DAM_DEVICE_ID = DAMS_DEVICES.ID)
+      LEFT JOIN DEVICES as dDAL ON (DALS.DEVICE_ID = dDAL.ID)
+      LEFT JOIN DEVICES as dDAM ON (DAMS_DEVICES.DEVICE_ID = dDAM.ID)
+      LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ILLUMINATIONS.UNIT_ID)
+      LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+      LEFT JOIN CITY ON (CLUNITS.CITY_ID = CITY.CITY_ID)
+      LEFT JOIN STATEREGION ON (CITY.STATE_ID = STATEREGION.ID)
+  `
+
+  const conditions: string[] = []
+  if (qPars.clientIds) { conditions.push(`CLIENTS.CLIENT_ID IN (:clientIds)`) }
+  if (qPars.unitIds) { conditions.push(`CLUNITS.UNIT_ID IN (:unitIds)`) }
+  if (qPars.INCLUDE_INSTALLATION_UNIT === false) { conditions.push(`CLUNITS.PRODUCTION = 1`) }
+  if (conditions.length) { sentence += ' WHERE ' + conditions.join(' AND ') }
+
+  return sqldb.query<{
+    ILLUMINATION_ID: number,
+    ILLUM_DEV_ID: number,
+    UNIT_ID: number
+    DAL_CODE: string
+    DMT_CODE: string
+    DAM_ILLUMINATION_CODE: string
+    NAME: string
+    GRID_VOLTAGE: number
+    GRID_CURRENT: number
+    DAL_PORT: number
+    DMT_PORT: number
+    FEEDBACK: number
+    UNIT_NAME: string
+    CLIENT_NAME: string
+    CITY_NAME: string
+    STATE_UF: string
+    CLIENT_ID: number
+  }>(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC getIlluminationFullInfo = SELECT DISTINCT
+  PARAM ID: {ILLUMINATION.ID}
+  FROM ILLUMINATIONS
+    LEFT JOIN DALS_ILLUMINATIONS ON (DALS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+    LEFT JOIN DALS ON (DALS_ILLUMINATIONS.DAL_ID = DALS.ID)
+    LEFT JOIN DMTS_ILLUMINATIONS ON (DMTS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+    LEFT JOIN DMTS ON (DMTS_ILLUMINATIONS.DMT_ID = DMTS.ID)
+    LEFT JOIN DEVICES as dDAL ON (DALS.DEVICE_ID = dDAL.ID)
+    LEFT JOIN DEVICES as dDMT ON (DMTS.DEVICE_ID = dDMT.ID)
+    LEFT JOIN CLUNITS ON (ILLUMINATIONS.UNIT_ID = CLUNITS.UNIT_ID)
+    LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+    LEFT JOIN CITY ON (CITY.CITY_ID = CLUNITS.CITY_ID)
+    LEFT JOIN STATEREGION ON (STATEREGION.ID = CITY.STATE_ID)
+
+    SELECT ILLUMINATIONS.ID,
+    SELECT ILLUMINATIONS.NAME,
+    SELECT ILLUMINATIONS.GRID_VOLTAGE,
+    SELECT ILLUMINATIONS.GRID_CURRENT,
+    SELECT DMTS_ILLUMINATIONS.DMT_ID,
+    SELECT DMTS_ILLUMINATIONS.PORT as DMT_PORT,
+    SELECT DALS_ILLUMINATIONS.DAL_ID,
+    SELECT DALS_ILLUMINATIONS.PORT AS DAL_PORT,
+    SELECT DALS_ILLUMINATIONS.FEEDBACK,
+    SELECT dDAL.DEVICE_CODE AS DAL_CODE,
+    SELECT dDMT.DEVICE_CODE AS DMT_CODE,
+    SELECT CLUNITS.UNIT_ID,
+    SELECT CLUNITS.UNIT_NAME,
+    SELECT CLIENTS.CLIENT_ID,
+    SELECT CLIENTS.NAME AS CLIENT_NAME,
+    SELECT STATEREGION.NAME AS STATE_ID
+  WHERE {ILLUMINATIONS.ID} = ({:ID})
+*/
+export function getIlluminationFullInfo (qPars: { ID: number }) {
+  let sentence = `
+    SELECT DISTINCT
+      ILLUMINATIONS.ID,
+      ILLUMINATIONS.NAME,
+      ILLUMINATIONS.GRID_VOLTAGE,
+      ILLUMINATIONS.GRID_CURRENT,
+      DMTS_ILLUMINATIONS.DMT_ID,
+      DMTS_ILLUMINATIONS.PORT as DMT_PORT,
+      DALS_ILLUMINATIONS.DAL_ID,
+      DALS_ILLUMINATIONS.PORT AS DAL_PORT,
+      DALS_ILLUMINATIONS.FEEDBACK,
+      DAMS_ILLUMINATIONS.DAM_DEVICE_ID,
+      dDAL.DEVICE_CODE AS DAL_CODE,
+      dDMT.DEVICE_CODE AS DMT_CODE,
+      dDAM.DEVICE_CODE AS DAM_ILLUMINATION_CODE,
+      DALS_ILLUMINATIONS.DEFAULT_MODE,
+      CLUNITS.UNIT_ID,
+      CLUNITS.UNIT_NAME,
+      CLIENTS.CLIENT_ID,
+      CLIENTS.NAME AS CLIENT_NAME,
+      TIME_ZONES.ID AS TIMEZONE_ID,
+      TIME_ZONES.AREA AS TIMEZONE_AREA,
+      TIME_ZONES.TIME_ZONE_OFFSET AS TIMEZONE_OFFSET,
+      STATEREGION.NAME AS STATE_ID
+  `
+  sentence += `
+    FROM
+      ILLUMINATIONS
+      LEFT JOIN DALS_ILLUMINATIONS ON (DALS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DALS ON (DALS_ILLUMINATIONS.DAL_ID = DALS.ID)
+      LEFT JOIN DMTS_ILLUMINATIONS ON (DMTS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DMTS ON (DMTS_ILLUMINATIONS.DMT_ID = DMTS.ID)
+      LEFT JOIN DAMS_ILLUMINATIONS ON (DAMS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DAMS_DEVICES ON (DAMS_ILLUMINATIONS.DAM_DEVICE_ID = DAMS_DEVICES.ID)
+      LEFT JOIN DEVICES as dDAL ON (DALS.DEVICE_ID = dDAL.ID)
+      LEFT JOIN DEVICES as dDMT ON (DMTS.DEVICE_ID = dDMT.ID)
+      LEFT JOIN DEVICES as dDAM ON (DAMS_DEVICES.DEVICE_ID = dDAM.ID)
+      LEFT JOIN CLUNITS ON (ILLUMINATIONS.UNIT_ID = CLUNITS.UNIT_ID)
+      LEFT JOIN TIME_ZONES ON (TIME_ZONES.ID = CLUNITS.TIMEZONE_ID)
+      LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+      LEFT JOIN CITY ON (CITY.CITY_ID = CLUNITS.CITY_ID)
+      LEFT JOIN STATEREGION ON (STATEREGION.ID = CITY.STATE_ID)
+
+    WHERE
+      ILLUMINATIONS.ID = :ID
+  `;
+
+  return sqldb.querySingle<{
+    ID: number
+    NAME: string
+    GRID_VOLTAGE: number
+    GRID_CURRENT: number
+    DAL_ID: number
+    DAL_CODE: string
+    DMT_ID: number
+    DMT_CODE: string
+    DAM_DEVICE_ID: number
+    DAM_ILLUMINATION_CODE: string
+    DMT_PORT?: number
+    DAL_PORT?: number
+    FEEDBACK: number
+    DEFAULT_MODE: string
+    UNIT_ID: number
+    UNIT_NAME: string
+    CLIENT_ID: number
+    CLIENT_NAME: string
+    TIMEZONE_ID: number
+    TIMEZONE_AREA: string
+    TIMEZONE_OFFSET: number
+  }>(sentence, qPars)
+}
+
+export function getIlluminationByNameAndUnit(qPars: { NAME: string, UNIT_ID: number }) {
+  let sentence = `
+    SELECT
+      ILLUMINATIONS.ID,
+      ILLUMINATIONS.NAME,
+      ILLUMINATIONS.GRID_VOLTAGE,
+      ILLUMINATIONS.GRID_CURRENT,
+      ILLUMINATIONS.UNIT_ID
+    FROM ILLUMINATIONS
+    WHERE ILLUMINATIONS.NAME = :NAME AND ILLUMINATIONS.UNIT_ID = :UNIT_ID;
+  `
+  return sqldb.query<{
+    ID: number
+    NAME: string
+    GRID_VOLTAGE: number,
+    GRID_CURRENT: number,
+    UNIT_ID: number,
+  }>(sentence, qPars)
+}
+
+export function getIllumInfoListUnionDmt (qPars: {UNIT_ID: number}) {
+  let sentence = `
+  SELECT
+    ILLUMINATIONS.ID,
+    ILLUMINATIONS.UNIT_ID,
+    ILLUMINATIONS.NAME,
+    ILLUMINATIONS.GRID_VOLTAGE,
+    ILLUMINATIONS.GRID_CURRENT,
+    DALS_ILLUMINATIONS.FEEDBACK,
+    COALESCE(DMTS_ILLUMINATIONS.PORT, DALS_ILLUMINATIONS.PORT) AS PORT,
+    CLUNITS.UNIT_NAME,
+    DEVICES.DEVICE_CODE
+  `
+  sentence += `
+  FROM
+  ILLUMINATIONS
+  LEFT JOIN DALS_ILLUMINATIONS ON (ILLUMINATIONS.ID = DALS_ILLUMINATIONS.ILLUMINATION_ID)  
+  LEFT JOIN DMTS_ILLUMINATIONS ON (ILLUMINATIONS.ID = DMTS_ILLUMINATIONS.ILLUMINATION_ID)  
+  LEFT JOIN DAMS_ILLUMINATIONS ON (ILLUMINATIONS.ID = DAMS_ILLUMINATIONS.ILLUMINATION_ID)
+  
+  LEFT JOIN DALS ON (DALS_ILLUMINATIONS.DAL_ID = DALS.ID)
+  LEFT JOIN DMTS ON (DMTS_ILLUMINATIONS.DMT_ID = DMTS.ID)
+  LEFT JOIN DAMS_DEVICES ON (DAMS_ILLUMINATIONS.DAM_DEVICE_ID = DAMS_DEVICES.ID)
+  
+  LEFT JOIN DEVICES ON (COALESCE(DALS.DEVICE_ID,DMTS.DEVICE_ID,DAMS_DEVICES.DEVICE_ID) = DEVICES.ID)
+  LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ILLUMINATIONS.UNIT_ID)
+  `
+
+  sentence += `
+    WHERE CLUNITS.UNIT_ID = :UNIT_ID;
+  `
+
+  return sqldb.query<{
+    ID: number
+    UNIT_ID: number
+    DEVICE_CODE: string
+    NAME: string
+    GRID_VOLTAGE: number
+    GRID_CURRENT: number
+    FEEDBACK: number
+    PORT: number
+    UNIT_NAME: string
+  }>(sentence, qPars)
+}
+
+export function getIlluminationInfoSample (qPars: { ID: number }) {
+  let sentence = `
+    SELECT
+      ILLUMINATIONS.ID,
+      ILLUMINATIONS.NAME,
+      ILLUMINATIONS.GRID_VOLTAGE,
+      ILLUMINATIONS.GRID_CURRENT
+  `
+  sentence += `
+    FROM
+      ILLUMINATIONS
+    WHERE ILLUMINATIONS.ID = :ID
+  `;
+
+  return sqldb.querySingle<{
+    ID: number
+    NAME: string
+    GRID_VOLTAGE: number
+    GRID_CURRENT: number
+  }>(sentence, qPars)
+}
+
+export function getAllIlluminationListByUnit(qPars: { UNIT_IDs: number[] }) {
+  const sentence =  `
+  SELECT 
+  ILLUMINATIONS.ID,
+  ILLUMINATIONS.NAME,
+  ILLUMINATIONS.UNIT_ID,
+  ILLUMINATIONS.GRID_VOLTAGE,
+  ILLUMINATIONS.GRID_CURRENT,
+  dev.FEEDBACK,
+  DEVICES.DEVICE_CODE
+  FROM ILLUMINATIONS
+    LEFT JOIN (
+      SELECT dal.ILLUMINATION_ID, dal.DAL_ID AS ID, dal.PORT, dal.FEEDBACK FROM DALS_ILLUMINATIONS dal
+      UNION
+      SELECT dmt.ILLUMINATION_ID, dmt.DMT_ID AS ID, dmt.PORT, null as FEEDBACK FROM DMTS_ILLUMINATIONS dmt
+    ) dev ON (ILLUMINATIONS.ID = dev.ILLUMINATION_ID)
+    LEFT JOIN (
+      SELECT DALS.ID, DALS.DEVICE_ID FROM DALS
+      UNION
+      SELECT DMTS.ID, DMTS.DEVICE_ID FROM DMTS
+    ) dev2 ON (dev2.ID = dev.ID)
+  LEFT JOIN DEVICES ON (DEVICES.ID = dev2.DEVICE_ID)
+  WHERE ILLUMINATIONS.UNIT_ID IN (:UNIT_IDs)
+  ;`
+  return sqldb.query<{
+    ID: number,
+    NAME: string,
+    UNIT_ID: number,
+    GRID_VOLTAGE: number,
+    GRID_CURRENT: number,
+    FEEDBACK: number,
+    DEVICE_CODE: string
+  }>(sentence, qPars)
+}
+export function getIllumDmtInfoList (qPars: {CLIENT_ID: number}) {
+  let sentence = `
+    SELECT DISTINCT
+      ILLUMINATIONS.ID,
+      ILLUMINATIONS.UNIT_ID,
+      ILLUMINATIONS.NAME,
+      ILLUMINATIONS.GRID_VOLTAGE,
+      ILLUMINATIONS.GRID_CURRENT,
+      DMTS_ILLUMINATIONS.PORT,
+      CLUNITS.UNIT_NAME,
+      DEVICES.DEVICE_CODE AS DMT_CODE
+  `
+  sentence += `
+    FROM
+      ILLUMINATIONS
+      LEFT JOIN DMTS_ILLUMINATIONS ON (DMTS_ILLUMINATIONS.ILLUMINATION_ID = ILLUMINATIONS.ID)
+      LEFT JOIN DMTS ON (DMTS_ILLUMINATIONS.DMT_ID = DMTS.ID)
+      LEFT JOIN DEVICES ON (DMTS.DEVICE_ID = DEVICES.ID)
+      LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ILLUMINATIONS.UNIT_ID)
+      LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+  `
+
+  sentence += `
+    WHERE CLIENTS.CLIENT_ID = :CLIENT_ID
+`
+
+  return sqldb.query<{
+    ID: number
+    UNIT_ID: number
+    DMT_CODE: string
+    NAME: string
+    GRID_VOLTAGE: number
+    GRID_CURRENT: number
+    PORT: number
+    UNIT_NAME: string
+  }>(sentence, qPars)
+}

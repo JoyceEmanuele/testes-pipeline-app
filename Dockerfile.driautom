@@ -1,0 +1,22 @@
+# Usando uma imagem base do Node.js
+FROM node:18.17.1
+
+# Definindo o diretório de trabalho dentro do container
+WORKDIR /usr/src/app
+
+# Copiando os arquivos de dependências para o container
+COPY package*.json ./
+
+# Instalando as dependências
+RUN npm install
+
+# Copiando o restante dos arquivos da aplicação
+COPY . .
+
+RUN npm run build
+
+# Expondo as portas que o serviço vai usar (substitua pelas portas corretas)
+EXPOSE 46129 46130 46132
+
+# Comando para rodar o serviço com os parâmetros específicos
+CMD ["node", "dist/serviceDriAutomation/main.js"]

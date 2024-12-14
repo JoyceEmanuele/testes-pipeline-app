@@ -1,0 +1,13 @@
+[Unit]
+Description=DAP API Gateway
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/API-Server
+ExecStart=/usr/bin/node /home/ubuntu/API-Server/dist/serviceGateway/main.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

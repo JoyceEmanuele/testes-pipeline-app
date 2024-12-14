@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;500&display=swap" rel="stylesheet">
+  <title>Plataforma Celsius 360</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;500&display=swap');
+    @page {
+      size: auto;
+      margin: 0;
+    }
+    .color_t_high {
+      color: #DC0E01;
+    }
+    .color_t_low {
+      color: #4C87C7;
+    }
+    .color_t_good {
+      color: #58CC00;
+    }
+    .color_t_neutral {
+      color: rgb(70,69,85);
+    }
+    /* flex box e desabilitado no gmail, display: flex tem suporte parcial*/
+    .dac-health-cell {
+      display: flex;
+      align-items: center;
+      height: 25px;
+    }
+  </style>
+</head>
+
+<body style="margin: 0; padding: 0;">
+  <table bgcolor="#E4E6E7" border="0" cellpadding="0" cellspacing="0" width="100%">
+   <tr>
+    <td>
+      <!-- Start -->
+      <!-- O Outlook não dá suporte ao uso de margens internas e externas.
+       Para isso, tente usar os atributos cellpadding e cellspacing.-->
+      <table align="center" border="0" cellpadding="0" cellspacing="0" width="1150">
+
+        <tr bgcolor="#0F0F38" border="0">
+         <td style="padding: 0 40px; height: 130px; display: flex;">
+          <div style="font-size: 22px; height: 40px; padding-top: 34px; width: 50%;">
+            <span style="display: inline-block; color: #FFF; font-size: 21px; font-weight: bold; font-style: normal; font-family:'Inter', sans-serif; display: inline-block; margin-top: 10px;">#RELATORIO_SEMANAL#</span><br>
+            <span style="font-size: 15px; display: inline-block; white-space: nowrap; color: #ffffff;"><span style="color: #00FF9B; font-family:'Inter', sans-serif; font-weight: bold; font-size: 13px;">$DAT_INI$</span> #A# <span style="color: #00FF9B; font-family:'Inter', sans-serif; font-weight: bold; font-size: 13px;">$DAT_FIN$</span>.</p>
+          </div>
+          <div style="width: 50%; text-align: right;">
+            <img style="padding-top: 40px;" src="https://dl-dielenergia-com.s3.sa-east-1.amazonaws.com/imgs/Diel_Logo_Color_Padrao.png" border="0" alt="logo" height="35.94" width="117.64">
+          </div>
+         </td>
+        </tr>
+
+        <tr style="background-color: #FFF;">
+         <td style="padding: 10px 40px 30px 40px;">
+          <p style="color: #000000; font-size: 24px; font-family:'Inter', sans-serif;">#OLA# <span style="color: #4557DB; font-weight: bold; font-family:'Inter', sans-serif;">$NOME_USUARIO$</span></p>
+
+          <P style="font-size: 14px; color:#000000; font-weight: 400; font-family:'Inter', sans-serif;">#AQUI_ESTA_SEU_RELATORIO_SEMANAL# <br> #DE# <span style="color: #0d0e0d; font-family:'Inter', sans-serif; font-weight: bold;">$DAT_INI$</span> #A# <span style="color: #0d0e0d; font-family:'Inter', sans-serif; font-weight: bold;">$DAT_FIN$</span>.</P>
+          <P style="margin-top: 40px; font-size: 14px; color:#000000; font-weight: 400; font-family:'Inter', sans-serif;">#AS_UNIDADES_RELACIONADAS#:</P>
+
+            <table style="border-collapse: collapse; border-radius: 8px 8px 0 0; box-shadow: 2px 1px 8px #bfc2c5;">
+              <tr style="border-bottom: 1px solid #bfc2c5;">
+                <th style="font-size: 12px; text-align: left; font-family:'Inter', sans-serif; padding: 5px; color: #000000; ">#CIDADE#</th>
+                <th style="font-size: 12px; text-align: left; font-family:'Inter', sans-serif; padding: 5px; color: #000000; ">#UNIDADE#</th>
+                <th style="font-size: 12px; text-align: left; font-family:'Inter', sans-serif; padding: 5px; color: #000000; white-space: nowrap;">#SAUDE_DAS_MAQUINAS#</th>
+                <th style="font-size: 12px; text-align: left; font-family:'Inter', sans-serif; padding: 5px; color: #000000; white-space: nowrap;">#TEMPERATURA_MEDIA_SEMANAL#</th>
+                <th style="font-size: 12px; text-align: left; font-family:'Inter', sans-serif; padding: 5px; color: #000000; white-space: nowrap;">#AUTOMACAO#</th>
+              </tr>
+<!-- SPLIT -->
+              <tr >
+                <td style=" border-bottom: 1px solid #c3c5c5;font-family: sans-serif; font-size: 12px; white-space: nowrap; padding: 5px; color: #000000;">$CITY$ - $STATE$</td>
+                <td style="border-bottom: 1px solid #c3c5c5; font-family: sans-serif;font-size: 12px; white-space: nowrap; padding: 5px; color: #000000;">$NOME_UNIDADE$ 
+                  <div style="margin-top: 10px; border: 3px solid #4557DB; width: 40px; height: 20px; border-radius: 5px; align-items: center; justify-content: center;">
+                    <a style="padding: 5px 5px; font-weight: bold; font-size: 15px; text-decoration: none; color: #4557DB;" href="$LINK_PDF_UNIDADE$">PDF</a>
+                  </div>
+                </td>
+                <td style=" border-bottom: 1px solid #c3c5c5; font-family: sans-serif;font-size: 12px; white-space: nowrap; padding: 5px;">
+<!-- SPLIT -->
+                  <div class="dac-health-cell">
+                    <img style="width: 20px !important; height: 20px !important; margin-right: 10px;" src="https://dl-dielenergia-com.s3-sa-east-1.amazonaws.com/imgs/meterv3_$HLEVEL$.png">
+                    <span style="color: #000000;">$TEXTO_DAC$</span>
+                  </div>
+<!-- SPLIT -->
+                  $MISSING_MACHINES_NOTE$
+                </td>
+                <td style=" border-bottom: 1px solid #c3c5c5; font-family: sans-serif;font-size: 12px; white-space: nowrap; padding: 5px;">
+<!-- SPLIT -->
+                  <div class="dac-health-cell">
+                    <span style="color: #000000;">$ROOM_NAME$</span>
+                    <img style="width: 20px !important; height: 20px !important;" src="https://dl-dielenergia-com.s3-sa-east-1.amazonaws.com/imgs/termo_$T_COLOR$.png">
+                    <span class="color_t_$T_LEVEL$">$T_MED$</span>
+                  </div>
+<!-- SPLIT -->
+                </td>
+                <td style=" border-bottom: 1px solid #c3c5c5; font-family: sans-serif;font-size: 12px; white-space: nowrap; padding: 5px;">
+<!-- SPLIT -->
+                  <div class="dac-health-cell">
+                    <span style="color: #000000;">$TEXTO_DAM$</span>
+                  </div>
+<!-- SPLIT -->
+                </td>
+              </tr>
+<!-- SPLIT -->
+            </table>
+
+            <div style="margin: 25px auto 0 auto; background:#4557DB; width: 310px; height: 50px; border-radius: 10px; text-align: center; vertical-align: middle;">
+              <a href="https://dash.dielenergia.com" style="color:#FFF; display: inline-block; padding: 14px 0px; text-decoration: none; font-weight: bold; font-family:'Inter', sans-serif;">#ACOMPANHE_EM_TEMPO_REAL#</a>
+            </div>
+            
+            <div style="margin-top: 60px;">
+              <p style="margin-top: 40px; font-size: 14px; color:#000000; font-weight: 400; font-family:'Inter', sans-serif;">#ATENCIOSAMENTE#, <br>#TEAM# <span style="margin: 0 0 0 5px; color: #4557DB; font-weight: bold; font-family:'Inter', sans-serif;">Diel Energia</span></p>
+            </div>
+         </td>
+        </tr>
+
+        <tr bgcolor="#0F0F36" align="center">
+          <td style="padding: 40px 40px">
+            <span style="display: inline-block; margin-top: 20px; color: #FFF; font-family:'Inter', sans-serif;">#PARA_DUVIDAS# <br> #CONTATAR_EM# <a href="" style="color: #00FF9B; font-weight: bold; font-size: 14px; font-family:'Inter', sans-serif;">cs@dielenergia.com</a></span><br>
+            <span style="display: inline-block; margin-top: 14px; color: #FFF; font-family:'Inter', sans-serif;">#CASO_DE_URGENCIA#<span style="color: #00FF9B;  font-weight: bold; font-size: 14px; font-family:'Inter', sans-serif;"> (21) 97593-3367</span></span>
+            <div style="margin-top: 25px;">
+              <h1 style="color: #00FF9B; font-size: 16px; font-family:'Inter', sans-serif;">#ONDE_ESTAMOS#</h1>
+              <img src="https://dl-dielenergia-com.s3.sa-east-1.amazonaws.com/imgs/localtag.png" border="0" alt="Localização" style="margin-top: 10px; width: 9px;  height: 13.5px;">
+              <span style="color: #FFF; font-family:'Inter', sans-serif; font-weight: bold; margin-left: 5px;">São Paulo</span><br>
+              <p style="font-family:'Inter', sans-serif; color: #FFF;">Av. Dr. Cardoso de Melo, 1608<br> 11° andar, Vila Olimpia, São Paulo - SP</p>
+            </div>
+          </td>
+         </tr>
+       </table>
+       <!-- End -->
+    </td>
+   </tr>
+  </table>
+ </body>
+</html>

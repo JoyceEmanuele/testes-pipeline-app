@@ -1,0 +1,60 @@
+import * as sqldb from '../connectSql'
+import { saveOperationLog, OperationLogData } from '../dbModifLog'
+import { dbLogger } from '../../../srcCommon/helpers/logger'
+
+/* @IFHELPER:FUNC getCommandsList = SELECT
+
+  FROM KRON_MULTK_COMMANDS
+
+  SELECT KRON_MULTK_COMMANDS.COMMAND,
+  SELECT KRON_MULTK_COMMANDS.SYS_ID,
+  SELECT KRON_MULTK_COMMANDS.ADDRESS,
+  SELECT KRON_MULTK_COMMANDS.DESCRIPTION,
+  SELECT KRON_MULTK_COMMANDS.IP,
+  SELECT KRON_MULTK_COMMANDS.ID,
+  SELECT KRON_MULTK_COMMANDS.SIZE,
+  SELECT KRON_MULTK_COMMANDS.FUNC_ID,
+  SELECT KRON_MULTK_COMMANDS.R_W,
+  SELECT KRON_MULTK_COMMANDS.UNIT,
+  SELECT KRON_MULTK_COMMANDS.FORMULA,
+  SELECT KRON_MULTK_COMMANDS.ALIAS
+*/
+export function getCommandsList (qPars: {
+}) {
+  let sentence = `
+    SELECT
+    KRON_MULTK_COMMANDS.COMMAND,
+    KRON_MULTK_COMMANDS.SYS_ID,
+    KRON_MULTK_COMMANDS.ADDRESS,
+    KRON_MULTK_COMMANDS.DESCRIPTION,
+    KRON_MULTK_COMMANDS.IP,
+    KRON_MULTK_COMMANDS.ID,
+    KRON_MULTK_COMMANDS.SIZE,
+    KRON_MULTK_COMMANDS.FUNC_ID,
+    KRON_MULTK_COMMANDS.R_W,
+    KRON_MULTK_COMMANDS.UNIT,
+    KRON_MULTK_COMMANDS.FORMULA,
+    KRON_MULTK_COMMANDS.ALIAS
+  `
+
+  sentence += `
+    FROM
+      KRON_MULTK_COMMANDS
+    ORDER BY CAST(SUBSTRING(COMMAND, 4, 3) AS UNSIGNED)
+  `
+
+  return sqldb.query<{
+    COMMAND: string
+    SYS_ID: number
+    ADDRESS: number
+    DESCRIPTION: string
+    IP: string
+    ID: number
+    SIZE: number
+    FUNC_ID: number
+    R_W: string
+    UNIT: string
+    FORMULA: string
+    ALIAS: string
+  }>(sentence, qPars)
+}

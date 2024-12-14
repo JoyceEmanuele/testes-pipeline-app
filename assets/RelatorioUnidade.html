@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;500&display=swap" rel="stylesheet">
+  <title>Document</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;500&display=swap');
+    @page {
+      margin: 0;
+    }
+    body {
+      zoom: 0.75;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+
+      font-family: Arial, sans;
+      color: #181842;
+    }
+
+    header {
+      width: 100%;
+      background-color: #0F0F38;
+      position: fixed;
+      top: 0;
+    }
+    footer {
+      width: 100%;
+      background-color: #0F0F38;
+      position: fixed;
+      bottom: 0;
+    }
+
+    .header-space {
+      height: 110px;
+    }
+    .footer-space {
+      height: 160px;
+    }
+
+    .tableHeaderCell {
+      color: grey;
+      background-color: white;
+      font-size: 12px;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      padding: 8px 5px;
+      white-space: nowrap;
+    }
+    .tableRow:not(:last-child) {
+      border-bottom: 1px solid #9ea1a3;
+    }
+    .tableCell {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      white-space: nowrap;
+      padding: 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .room-temp-low {
+      color: #2d81ff;
+    }
+    .room-temp-high {
+      color: #e00030;
+    }
+    .HealthMeterContainer {
+        margin-top: 14px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+    .dacLink {
+      color: inherit;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div style="display: flex; padding: 0px 56px; height: 100px; justify-content: space-between; align-items: center;">
+      <span style="padding-top: 5px; font-size: 20px; color: white; font-family: sans-serif; font-weight: bold;">#RELATORIO_MONITORAMENTO#</span>
+      <img border="0" src="https://dl-dielenergia-com.s3.sa-east-1.amazonaws.com/imgs/Diel_Logo_Color_Padrao.png" alt="logo" height="35.94" width="117.64">
+    </div>
+  </header>
+
+  <table style="width: 100%; table-layout: fixed;">
+    <thead><tr><td>
+      <div class="header-space">&nbsp;</div>
+    </td></tr></thead>
+    <tbody><tr><td>
+
+  <div>
+    <div style="padding: 20px 56px; font-family: sans-serif; line-height: 28px; color: black;">
+       <div><b>#CLIENTE#: </b>$CLIENT_NAME$ | <b>#PERIODO#: </b>$PERIOD$ | <b>#LOCALIZACAO#: </b>$CITY_STATE$</div>
+       <div><b>#UNIDADE#: </b>$UNIT_NAME$ | <b>#NUM_DE_MONITORES#: </b>$NUMDEVS$</div>
+    </div>
+
+<!-- SPLIT -->
+    <div style="padding: 10px 56px 0px 56px;">
+      <h2 style="color: #4557DB; font-family: sans-serif; font-size: 20px;">#AMBIENTES#</h2>
+      <div>
+        <table style="width: 100%; border-collapse: collapse; table-layout: fixed; border-radius: 5px; box-shadow: #bfc2c5 0px 3px 8px, #e4e6e9 0px 3px 12px; line-height: 20px;">
+          <thead>
+            <tr class="tableRow" style="border-bottom: 1px solid #9ea1a3;">
+              <th class="tableHeaderCell">#AMBIENTE#</th>
+              <th class="tableHeaderCell" style="width: 200px">#TIPO_DE_AMBIENTE#</th>
+              <th class="tableHeaderCell" style="width: 90px">#LIMITES#</th>
+              <th class="tableHeaderCell" style="width: 65px">#MEDIAS#</th>
+              <th class="tableHeaderCell" style="width: 65px">#MINIMA#</th>
+              <th class="tableHeaderCell" style="width: 65px">#MAXIMA#</th>
+            </tr>
+          </thead>
+          <tbody>
+<!-- SPLIT -->
+            <tr class="tableRow" style="break-inside: avoid;">
+              <td class="tableCell">
+                <div style="font-weight: bold;">$ROOM_NAME$</div>
+                <div>$DUT_ID$</div>
+              </td>
+              <td class="tableCell">$RTYPE_NAME$</td>
+              <td class="tableCell">$T_RANGE$</td>
+              <td class="tableCell room-temp-$T_LEVEL$"><b>$T_MED$</b></td>
+              <td class="tableCell">$T_MIN$</td>
+              <td class="tableCell">$T_MAX$</td>
+            </tr>
+<!-- SPLIT -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+<!-- SPLIT -->
+
+    <div style="padding: 10px 56px 0px 56px; break-inside: auto;">
+      <h2 style="color: #4557DB; font-family: sans-serif; font-size: 20px;">#MAQUINAS#</h2>
+      <div>
+        <table style="width: 100%; border-collapse: collapse; table-layout: fixed; border-radius: 5px; box-shadow: #bfc2c5 0px 3px 8px, #e4e6e9 0px 3px 12px;">
+          <thead>
+            <tr class="tableRow" style="border-bottom: 1px solid #9ea1a3;">
+              <th class="tableHeaderCell">#MAQUINA#</th>
+              <th class="tableHeaderCell" style="width: 105px;">#DISPOSITIVO#</th>
+              <th class="tableHeaderCell" style="width: 170px;">#SAUDE#</th>
+              <th class="tableHeaderCell" style="width: 280px;">#POSSIVEIS_CAUSAS#</th>
+              <th class="tableHeaderCell" style="width: 140px;">#TAG_DA_MAQUINA#</th>
+            </tr>
+          </thead>
+          <tbody>
+<!-- SPLIT -->
+            <tr class="tableRow" style="height: 45px;">
+              <td class="tableCell">$GROUP_NAME$</td>
+              <td class="tableCell">
+                <a class="dacLink" href="$DAC_LINK$">$DAC_ID$</a>
+              </td>
+              <td class="tableCell">
+                <div class="HealthMeterContainer">
+                  <img src="../meterv3_$HLEVEL$.svg" width="32">&nbsp;
+                  <div style="color: $HLEVEL_COLOR$">$LEVEL_DESC$</div>
+                </div>
+              </td>
+              <td class="tableCell">$POSS_CAUSES$</td>
+              <td class="tableCell">$DAC_NAME$</td>
+            </tr>
+<!-- SPLIT -->
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size: 12px; display: flex; padding-top: 15px; $MISSINGMACHINES_STYLE_WRAP$">
+        <div style="width: 3%;">
+          &nbsp;
+        </div>
+        <div style="width: 31%; display: flex; align-items: center;">
+          <img src="../circulo_exclamacao.svg" width="26">&nbsp;
+          <span style="color: #363BC4;">$MISSINGMACHINES_TEXT_TITLE$</span>
+        </div>
+        <div style="width: 30%; display: flex; align-items: center; $MISSINGMACHINES_STYLE_GREEN$">
+          <img src="../meterv3_4.svg" width="26">&nbsp;
+          <span>$MISSINGMACHINES_TEXT_GREEN$</span>
+        </div>
+        <div style="width: 30%; display: flex; align-items: center; $MISSINGMACHINES_STYLE_GREY$">
+          <img src="../meterv3_0.svg" width="26">&nbsp;
+          <span>$MISSINGMACHINES_TEXT_GREY$</span>
+        </div>
+      </div>
+    </div>
+
+<!-- SPLIT -->
+    <div style="padding: 10px 56px 0px 56px; break-inside: avoid;">
+      <h2 style="color: #4557DB; font-family: sans-serif; font-size: 20px;">#ANALISE_ENERGETICA#</h2>
+      <div>
+        <table style="width: 100%; border-collapse: collapse; table-layout: fixed; border-radius: 5px; box-shadow: #bfc2c5 0px 3px 8px, #e4e6e9 0px 3px 12px; font-size: 0.9;">
+          <thead>
+            <tr class="tableRow" style="border-bottom: 1px solid #9ea1a3;">
+              <th class="tableHeaderCell">#MAQUINA#</th>
+              <th class="tableHeaderCell" style="width: 80px;">#POTENCIA# (kw)</th>
+<!-- SPLIT -->
+              <th class="tableHeaderCell" style="width: 78px;">$DIA$</th>
+<!-- SPLIT -->
+              <th class="tableHeaderCell" style="width: 89px;">#CONSUMO# (kwh)</th>
+            </tr>
+          </thead>
+          <tbody>
+<!-- SPLIT -->
+            <tr class="tableRow" style="height: 45px;">
+              <td class="tableCell">$GROUP_NAME$</td>
+              <td class="tableCell">$POTENCIA$</td>
+<!-- SPLIT -->
+              <td class="tableCell" style="color: rgb(37, 37, 37); background: rgba(0, 0, 0, 0) linear-gradient(to right, rgba(99, 142, 198, 0.58) $DAY_PERC$%, transparent 0px) repeat scroll 0% 0%;">$DAY_HOURS$</td>
+<!-- SPLIT -->
+              <td class="tableCell" style="background: $GRAD_COLOR$ none repeat scroll 0% 0%; color: rgb(37, 37, 37);">$CONSUMO_KWH$</td>
+            </tr>
+<!-- SPLIT -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="display: flex; font-family: sans-serif; padding-top: 20px; padding-left: 130px;">
+      <div style="text-align: center;$HIDE_CHART$">
+        <div style="text-align: center; font-weight: bold; font-size: 110%; padding-bottom: 10px; color: rgb(70, 69, 85);">
+          <div>#CONSUMO#</div>
+          <div>( #REFRIGERACAO# / #TOTAL# )</div>
+        </div>
+        <svg width="120" height="120" viewBox="-13 -13 126 126" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M 50 0 A 50 50 0 $BIGARC_B$ 1 $X_B$ $Y_B$"
+            stroke="#F29E66"
+            fill="none"
+            stroke-width="18"
+          />
+          <path
+            d="M 50 0 A 50 50 0 $BIGARC_A$ 0 $X_A$ $Y_A$"
+            stroke="#002060"
+            fill="none"
+            stroke-width="18"
+          />
+          <text x="50px" y="50px" dominant-baseline="middle" text-anchor="middle" font-size="24px" font-weight="bold">
+            $TEXT$
+          </text>
+        </svg>
+      </div>
+      <div style="font-family:'Inter', sans-serif; margin-left: 300px;">
+        $LINHAS_CONSUMO$
+      </div>
+    </div>
+<!-- SPLIT -->
+  </div>
+
+    </td></tr></tbody>
+    <tfoot><tr><td>
+      <div class="footer-space">&nbsp;</div>
+    </td></tr></tfoot>
+  </table>
+
+    <footer>
+      <div style="display: flex; justify-content: space-between; padding: 0px 56px; font-size: 85%; align-items: center; height: 140px;">
+        <div style="display: flex; align-items: center;">
+          <div style="margin-left: 50px; margin-right: 50px;">
+            <div style="padding-bottom: 10px; display: flex; align-items: center;">
+              <img src="../pointer.png" height="20">
+              <span style="color: white; font-family: 'Inter',sans-serif; font-weight: bold;">&nbsp;São Paulo</span>
+            </div>
+            <div style="color: white; font-family: 'Inter',sans-serif; font-weight: bold;">
+              Av. Dr. Cardoso de Melo, 1608, 11° Andar<br>
+              Vila Olimpia, SP
+            </div>
+          </div>
+          <div style="font-family:'Inter', sans-serif; color: white;">
+            (21) 97593-3367<br>
+            <a style="color: #00FF9B; font-family: sans-serif;" href="mailto:cs@dielenergia.com">cs@dielenergia.com</a>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+            <img style="max-height: 31px;" src="https://dl-dielenergia-com.s3.sa-east-1.amazonaws.com/imgs/Diel_Logo_Color_Padrao.png" alt="logo">
+            <div style="font-family:'Inter', sans-serif; color: white;">www.dielenergia.com</div>
+        </div>
+      </div>
+    </footer>
+</body>
+</html>
+

@@ -1,0 +1,3017 @@
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL") // DATABASE_URL="mysql://develbackend:uniquepassword@localhost:3306/dashdevelopment"
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL") // SHADOW_DATABASE_URL="mysql://develbackend:uniquepassword@localhost:3306/dashdevelopment_shadow"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ACCESS_DISTRIBUTORS {
+  UNIT_ID                     Int       @id @db.UnsignedMediumInt
+  ADDITIONAL_DISTRIBUTOR_INFO String?   @db.VarChar(100)
+  CONSUMER_UNIT               String?   @db.VarChar(30)
+  DISTRIBUTOR_ID              Int       @db.UnsignedMediumInt
+  ENCRYPTED_PASSWORD          Int       @default(0) @db.TinyInt
+  LOGIN                       String    @db.VarChar(175)
+  LOGIN_EXTRA                 String?   @db.VarChar(175)
+  PASSWORD                    String    @db.VarChar(250)
+  STATUS                      String    @db.VarChar(30)
+  STATUS_UPDATED_DATE         DateTime? @db.DateTime(0)
+
+  DISTRIBUTORS DISTRIBUTORS @relation(fields: [DISTRIBUTOR_ID], references: [DISTRIBUTOR_ID])
+  CLUNITS      CLUNITS      @relation(fields: [UNIT_ID], references: [UNIT_ID])
+}
+
+model ADDITIONAL_MACHINE_PARAMETERS {
+  ID         Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  MACHINE_ID Int      @db.UnsignedMediumInt
+  NAME       String   @db.VarChar(100)
+  VALUE      String   @db.VarChar(250)
+  MACHINES   MACHINES @relation(fields: [MACHINE_ID], references: [ID])
+
+  @@unique([MACHINE_ID, NAME])
+}
+
+model ADDITIONAL_NOBREAK_PARAMETERS {
+  ID         Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  NAME       String   @db.VarChar(100)
+  NOBREAK_ID Int      @db.UnsignedInt
+  VALUE      String   @db.VarChar(250)
+  NOBREAKS   NOBREAKS @relation(fields: [NOBREAK_ID], references: [ID])
+
+  @@unique([NOBREAK_ID, NAME])
+}
+
+model AIR_CURTAINS {
+  ID         Int @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_ID   Int @db.UnsignedInt
+  MACHINE_ID Int @db.UnsignedMediumInt
+
+  ASSETS   ASSETS   @relation(fields: [ASSET_ID], references: [ID])
+  MACHINES MACHINES @relation(fields: [MACHINE_ID], references: [ID])
+}
+
+model ASSETS {
+  ID                    Int       @id @default(autoincrement()) @db.UnsignedInt
+  DAT_CODE              String?   @db.VarChar(50)
+  INSTALLATION_DATE     DateTime? @db.Date
+  INSTALLATION_LOCATION String?   @db.VarChar(250)
+  MANUFACTURER          String?   @db.VarChar(100)
+  MODEL                 String?   @db.VarChar(100)
+  NAME                  String?   @db.VarChar(250)
+  UNIT_ID               Int?      @db.UnsignedMediumInt
+
+  CLUNITS                  CLUNITS?                @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  AIR_CURTAINS             AIR_CURTAINS[]
+  ASSETS_HEALTH            ASSETS_HEALTH?
+  ASSETS_HEALTH_HIST       ASSETS_HEALTH_HIST[]
+  ASSETS_HEALTH_OBS        ASSETS_HEALTH_OBS[]
+  ASSET_HEAT_EXCHANGERS    ASSET_HEAT_EXCHANGERS[]
+  ASSET_IMAGES             ASSET_IMAGES[]
+  CONDENSERS               CONDENSERS[]
+  EVAPORATORS              EVAPORATORS[]
+  NOBREAKS                 NOBREAKS[]
+  CHILLERS                 CHILLERS[]
+  CHILLER_CARRIER_MODELS   CHILLER_CARRIER_MODELS? @relation(fields: [cHILLER_CARRIER_MODELSID], references: [ID])
+  cHILLER_CARRIER_MODELSID Int?                    @db.UnsignedInt
+}
+
+model ASSETS_HEALTH {
+  ID                    Int                    @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_ID              Int                    @db.UnsignedInt
+  HEALTH_HIST_ID        Int                    @db.UnsignedMediumInt
+  ASSETS                ASSETS                 @relation(fields: [ASSET_ID], references: [ID])
+  ASSETS_HEALTH_HIST    ASSETS_HEALTH_HIST     @relation(fields: [HEALTH_HIST_ID], references: [ID])
+  FAULTS_DATAS          FAULTS_DATAS?
+  HEALTH_BEFORE_OFFLINE HEALTH_BEFORE_OFFLINE?
+
+  @@unique([ASSET_ID])
+}
+
+model ASSETS_HEALTH_HIST {
+  ID               Int              @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAT_REPORT       Int              @db.UnsignedInt
+  ASSET_ID         Int              @db.UnsignedInt
+  CT_ID            Int              @default(0)
+  DAT_UNTIL        Int?             @db.UnsignedInt
+  H_DATE           DateTime         @db.DateTime(0)
+  H_DESC           String           @db.VarChar(250)
+  H_INDEX          Int              @db.UnsignedInt
+  P_CAUSE_ID       Int?             @db.UnsignedMediumInt
+  ASSETS           ASSETS           @relation(fields: [ASSET_ID], references: [ID])
+  TYPEHEALTHCHANGE TYPEHEALTHCHANGE @relation(fields: [CT_ID], references: [ID])
+  P_CAUSES         P_CAUSES?        @relation(fields: [P_CAUSE_ID], references: [ID])
+  ASSETS_HEALTH    ASSETS_HEALTH[]
+
+  @@unique([DAT_REPORT, ASSET_ID, H_INDEX])
+  @@index([DAT_REPORT])
+}
+
+model ASSETS_HEALTH_OBS {
+  ID          Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_ID    Int    @db.UnsignedInt
+  DAT_REPORT  Int    @db.UnsignedInt
+  OBS_DESC    String @db.VarChar(250)
+  USER_REPORT String @db.VarChar(50)
+
+  ASSETS ASSETS @relation(fields: [ASSET_ID], references: [ID])
+}
+
+model ASSET_HEAT_EXCHANGERS {
+  ID                         Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  APPL_CFG                   String?  @db.VarChar(100)
+  ASSET_ID                   Int      @db.UnsignedInt
+  CAPACITY_POWER             Decimal? @db.Decimal(8, 2)
+  CAPACITY_UNIT              String?  @db.VarChar(10)
+  COMPRESSOR_NOMINAL_CURRENT Decimal? @db.Decimal(6, 2)
+  EQUIPMENT_POWER            String?  @db.VarChar(150)
+  EVAPORATOR_MODEL_ID        Int?     @db.UnsignedMediumInt
+  HEAT_EXCHANGER_ID          Int?
+  MACHINE_ID                 Int      @db.UnsignedMediumInt
+  MACHINE_KW                 Decimal? @default(0.0000) @db.Decimal(8, 4)
+  TYPE_CFG                   String?  @db.VarChar(100)
+
+  ASSETS                     ASSETS                       @relation(fields: [ASSET_ID], references: [ID])
+  EVAPORATORS_MODELS         EVAPORATORS_MODELS?          @relation(fields: [EVAPORATOR_MODEL_ID], references: [ID])
+  HEAT_EXCHANGERS            HEAT_EXCHANGERS?             @relation(fields: [HEAT_EXCHANGER_ID], references: [ID])
+  MACHINES                   MACHINES                     @relation(fields: [MACHINE_ID], references: [ID])
+  DACS_ASSET_HEAT_EXCHANGERS DACS_ASSET_HEAT_EXCHANGERS?
+  DRIS_ASSET_HEAT_EXCHANGERS DRIS_ASSET_HEAT_EXCHANGERS[]  
+  DUTS_DUO_ASSET_HEAT_EXCHANGERS        DUTS_DUO_ASSET_HEAT_EXCHANGERS?
+}
+
+model ASSET_IMAGES {
+  ID         Int    @id @default(autoincrement()) @db.UnsignedInt
+  ASSET_ID   Int    @db.UnsignedInt
+  DAT_UPLOAD Int    @db.UnsignedInt
+  FILENAME   String @db.VarChar(100)
+
+  ASSETS ASSETS @relation(fields: [ASSET_ID], references: [ID])
+}
+
+model ASSOCIATIONS {
+  ID        Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  CLIENT_ID Int    @db.UnsignedMediumInt
+  NAME      String @db.VarChar(250)
+  UNIT_ID   Int    @db.UnsignedMediumInt
+
+  CLIENTS        CLIENTS          @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  CLUNITS        CLUNITS          @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  ASSOC_MACHINES ASSOC_MACHINES[]
+}
+
+model ASSOC_MACHINES {
+  ID         Int @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSOC_ID   Int @db.UnsignedMediumInt
+  MACHINE_ID Int @db.UnsignedMediumInt
+  POSITION   Int @db.UnsignedMediumInt
+
+  ASSOCIATIONS ASSOCIATIONS @relation(fields: [ASSOC_ID], references: [ID])
+  MACHINES     MACHINES     @relation(fields: [MACHINE_ID], references: [ID])
+}
+
+model AUTOMATIONS_PARAMETERS {
+  ID                             Int                             @id @default(autoincrement()) @db.UnsignedMediumInt
+  ACTION_MODE                    String?                         @db.VarChar(100)
+  ACTION_POST_BEHAVIOR           String?                         @db.VarChar(100)
+  ACTION_TIME                    Int?                            @db.UnsignedInt
+  CURRENT_IN_DEVICE              String                          @default("0") @db.Char(1)
+  FORCED_BEHAVIOR                String?                         @db.VarChar(100)
+  IR_ID_COOL                     String?                         @db.VarChar(50)
+  LOWER_HYSTERESIS               Decimal?                        @db.Decimal(3, 1)
+  LTC                            Decimal?                        @db.Decimal(3, 1)
+  LTI                            Decimal?                        @db.Decimal(3, 1)
+  MODE                           String?                         @db.VarChar(50)
+  OPERATION                      String?                         @db.Char(1)
+  PERMISSION                     String?                         @db.VarChar(6)
+  SCHEDULE_END_BEHAVIOR          String?                         @db.VarChar(100)
+  SCHEDULE_START_BEHAVIOR        String?                         @db.VarChar(100)
+  SETPOINT                       Decimal?                        @db.Decimal(3, 1)
+  UPPER_HYSTERESIS               Decimal?                        @db.Decimal(3, 1)
+  AUTOMATIONS_PERIODS_PARAMETERS AUTOMATIONS_PERIODS_PARAMETERS?
+  SETPOINTS_PERIODS_SETTINGS     SETPOINTS_PERIODS_SETTINGS[]
+}
+
+model AUTOMATIONS_PERIODS {
+  ID                             Int                             @id @default(autoincrement()) @db.UnsignedMediumInt
+  AUTOMATION_PERIOD_STATUS       String?                         @db.Char(1)
+  BEGIN_TIME                     String?                         @db.VarChar(5)
+  END_TIME                       String?                         @db.VarChar(5)
+  TITLE                          String                          @db.VarChar(200)
+  AUTOMATIONS_PERIODS_PARAMETERS AUTOMATIONS_PERIODS_PARAMETERS?
+  EXCEPTIONS                     EXCEPTIONS?
+  MACHINES_AUTOMATIONS_PERIODS   MACHINES_AUTOMATIONS_PERIODS[]
+  SCHEDULES                      SCHEDULES?
+}
+
+model AUTOMATIONS_PERIODS_PARAMETERS {
+  ID                       Int                    @id @default(autoincrement()) @db.UnsignedMediumInt
+  AUTOMATION_PARAMETERS_ID Int                    @db.UnsignedMediumInt
+  AUTOMATION_PERIOD_ID     Int                    @db.UnsignedMediumInt
+  AUTOMATIONS_PARAMETERS   AUTOMATIONS_PARAMETERS @relation(fields: [AUTOMATION_PARAMETERS_ID], references: [ID])
+  AUTOMATIONS_PERIODS      AUTOMATIONS_PERIODS    @relation(fields: [AUTOMATION_PERIOD_ID], references: [ID])
+
+  @@unique([AUTOMATION_PARAMETERS_ID])
+  @@unique([AUTOMATION_PERIOD_ID])
+}
+
+model AV_OPTS {
+  OPT_ID    String  @id @db.VarChar(100)
+  OPT_LABEL String  @db.VarChar(100)
+  OPT_TYPE  String  @db.VarChar(100)
+  TAGS      String? @db.VarChar(100)
+}
+
+model BASELINES {
+  BASELINE_ID          Int                @id @default(autoincrement()) @db.UnsignedMediumInt
+  BASELINE_TEMPLATE_ID Int                @db.UnsignedMediumInt
+  UNIT_ID              Int                @db.UnsignedMediumInt
+  BASELINE_TEMPLATES   BASELINE_TEMPLATES @relation(fields: [BASELINE_TEMPLATE_ID], references: [BASELINE_TEMPLATE_ID])
+  CLUNITS              CLUNITS            @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  BASELINE_VALUES      BASELINE_VALUES[]
+
+  @@unique([UNIT_ID])
+}
+
+model BASELINE_TEMPLATES {
+  BASELINE_TEMPLATE_ID          Int         @id @default(autoincrement()) @db.UnsignedMediumInt
+  BASELINE_TEMPLATE_DESCRIPTION String      @db.VarChar(50)
+  BASELINE_TEMPLATE_TAG         String      @db.VarChar(30)
+  BASELINES                     BASELINES[]
+}
+
+model BASELINE_VALUES {
+  BASELINE_VALUE_ID Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  BASELINE_ID       Int       @db.UnsignedMediumInt
+  BASELINE_KWH      Decimal   @db.Decimal(11, 2)
+  BASELINE_MONTH    Int
+  BASELINE_PRICE    Decimal?  @db.Decimal(11, 2)
+  BASELINES         BASELINES @relation(fields: [BASELINE_ID], references: [BASELINE_ID])
+
+  @@unique([BASELINE_ID, BASELINE_MONTH])
+}
+
+model CARRIER_ECOSPLIT_COMMANDS {
+  COMMAND     String @id @db.VarChar(20)
+  ARRAY       String @db.VarChar(100)
+  DESCRIPTION String @db.VarChar(50)
+  R_W         String @db.VarChar(3)
+}
+
+model CG_EM210_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedTinyInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(10)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model CG_ET330_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(10)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  String? @default("1") @db.Char(1)
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model CHILLERS {
+  ID                       Int @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_ID                 Int @db.UnsignedInt
+  MACHINE_ID               Int @db.UnsignedMediumInt
+  CHILLER_CARRIER_MODEL_ID Int @db.UnsignedInt
+
+  ASSETS                 ASSETS                 @relation(fields: [ASSET_ID], references: [ID])
+  MACHINES               MACHINES               @relation(fields: [MACHINE_ID], references: [ID])
+  CHILLER_CARRIER_MODELS CHILLER_CARRIER_MODELS @relation(fields: [CHILLER_CARRIER_MODEL_ID], references: [ID])
+  DRIS_CHILLERS          DRIS_CHILLERS[]
+}
+
+model CHILLER_CARRIER_30HXE_GXE_COMMANDS {
+  ADDRESS     Int     @db.UnsignedInt
+  R_W         String  @db.VarChar(3)
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(300)
+  FORMULA     String? @db.VarChar(30)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  String? @default("1") @db.Char(1)
+  ID          Int     @default(1) @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  SIZE        Int     @default(1) @db.UnsignedTinyInt
+  SYS_ID      Int     @default(1) @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@id([ADDRESS, R_W])
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model CHILLER_CARRIER_30XA_XW_XS_XV_COMMANDS {
+  ADDRESS        Int     @db.UnsignedInt
+  R_W            String  @db.VarChar(3)
+  ALIAS          String? @db.VarChar(30)
+  COMMAND        String  @db.VarChar(20)
+  DESCRIPTION    String  @db.VarChar(300)
+  DESCRIPTION_EN String  @db.VarChar(300)
+  FORMULA        String? @db.VarChar(30)
+  FUNC_ID        Int     @db.UnsignedTinyInt
+  HAS_SIGNAL     String? @default("1") @db.Char(1)
+  ID             Int     @default(1) @db.UnsignedTinyInt
+  IP             String? @db.VarChar(30)
+  SIZE           Int     @default(1) @db.UnsignedTinyInt
+  SYS_ID         Int     @default(1) @db.UnsignedTinyInt
+  UNIT           String? @db.VarChar(10)
+
+  @@id([ADDRESS, R_W])
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model CHILLER_CARRIER_30XA_HVAR_COMMANDS {
+  ADDRESS        Int     @db.UnsignedInt
+  R_W            String  @db.VarChar(3)
+  ALIAS          String? @db.VarChar(30)
+  COMMAND        String  @db.VarChar(20)
+  DESCRIPTION    String  @db.VarChar(300)
+  DESCRIPTION_EN String  @db.VarChar(300)
+  FORMULA        String? @db.VarChar(30)
+  FUNC_ID        Int     @db.UnsignedTinyInt
+  HAS_SIGNAL     String? @default("1") @db.Char(1)
+  ID             Int     @default(1) @db.UnsignedTinyInt
+  IP             String? @db.VarChar(30)
+  SIZE           Int     @default(1) @db.UnsignedTinyInt
+  SYS_ID         Int     @default(1) @db.UnsignedTinyInt
+  UNIT           String? @db.VarChar(10)
+
+  @@id([ADDRESS, R_W])
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model CHILLER_CARRIER_ALARMS {
+  ID                       Int                        @id @default(autoincrement()) @db.UnsignedMediumInt
+  ACTION_TAKEN             String?                    @db.VarChar(250)
+  ALARM_CODE               String                     @db.VarChar(5)
+  CAUSE                    String?                    @db.VarChar(200)
+  DESCRIPTION              String?                    @db.VarChar(100)
+  REASON_ALARM             String?                    @db.VarChar(250)
+  RESET_TYPE               String?                    @db.VarChar(100)
+  DRIS_CHILLER_ALARMS_HIST DRIS_CHILLER_ALARMS_HIST[]
+
+  @@unique([ALARM_CODE])
+}
+
+model CHILLER_CARRIER_MODELS {
+  ID                      Int        @id @default(autoincrement()) @db.UnsignedInt
+  MODEL_NAME              String?    @db.VarChar(50)
+  NOMINAL_CAPACITY        Decimal?   @db.Decimal(6, 2)
+  NOMINAL_VOLTAGE         Int?
+  NOMINAL_FREQUENCY       Int?
+  CHILLER_CARRIER_LINE_ID Int        @db.UnsignedInt
+  ASSETS                  ASSETS[]
+  CHILLERS                CHILLERS[]
+
+  CHILLER_CARRIER_LINES CHILLER_CARRIER_LINES @relation(fields: [CHILLER_CARRIER_LINE_ID], references: [ID])
+
+  @@unique([ID])
+}
+
+model CHILLER_CARRIER_LINES {
+  ID                     Int                      @id @default(autoincrement()) @db.UnsignedInt
+  LINE_NAME              String                   @db.VarChar(50)
+  CHILLER_CARRIER_MODELS CHILLER_CARRIER_MODELS[]
+
+  @@unique([ID])
+}
+
+model CITY {
+  CITY_ID  String  @id @db.VarChar(50)
+  LAT      String? @db.VarChar(20)
+  LON      String? @db.VarChar(20)
+  NAME     String  @db.VarChar(100)
+  STATE_ID Int     @db.UnsignedMediumInt
+
+  STATEREGION STATEREGION @relation(fields: [STATE_ID], references: [ID])
+  CLUNITS     CLUNITS[]
+  DASHUSERS   DASHUSERS[]
+}
+
+model CLASSES {
+  CLASS_ID    Int           @id @default(autoincrement()) @db.UnsignedMediumInt
+  CLASS_NAME  String        @db.VarChar(250)
+  CLASS_TYPE  String        @db.VarChar(250)
+  CLIENT_ID   Int           @db.UnsignedMediumInt
+  CLIENTS     CLIENTS       @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  UNITCLASSES UNITCLASSES[]
+
+  @@unique([CLASS_TYPE, CLASS_NAME, CLIENT_ID])
+}
+
+model CLIENTS {
+  CLIENT_ID Int     @id @default(autoincrement()) @db.UnsignedMediumInt
+  CNPJ      String? @db.VarChar(50)
+  EMAIL     String? @db.VarChar(175)
+  ENABLED   String? @db.Char(1)
+  NAME      String? @db.VarChar(250)
+  PERMS_C   String? @db.VarChar(50)
+  PHONE     String? @db.VarChar(50)
+  PICTURE   String? @db.MediumText
+
+  ASSOCIATIONS    ASSOCIATIONS[]
+  CLASSES         CLASSES[]
+  CLUNITS         CLUNITS[]
+  DASHUSERS       DASHUSERS[]
+  DEVICES_CLIENTS DEVICES_CLIENTS[]
+  MANUFACT_DEVS   MANUFACT_DEVS[]
+  NOTIFSCFG       NOTIFSCFG[]
+  RATE_MODELS     RATE_MODELS[]
+  ROOMS           ROOMS[]
+  ROOMTYPES       ROOMTYPES[]
+  SIMCARDS        SIMCARDS[]
+  USERSCLIENTS    USERSCLIENTS[]
+  VISITATECNICA   VISITATECNICA[]
+
+  @@index([PERMS_C])
+}
+
+model CLUNITS {
+  UNIT_ID              Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  ADDRESS              String?   @db.MediumText
+  AMOUNT_PEOPLE        Int?      @db.MediumInt
+  CITY_ID              String?   @db.VarChar(50)
+  CLIENT_ID            Int       @db.UnsignedMediumInt
+  CONSTRUCTED_AREA     Decimal?  @db.Decimal(8, 2)
+  DISABREP             Int?      @db.TinyInt
+  EXTRA_DATA           String?   @db.MediumText
+  GA_METER             Int?      @db.UnsignedMediumInt
+  HUMIDITY_OFFSET      Decimal?  @default(18.00) @db.Decimal(4, 2)
+  LAT                  String?   @db.VarChar(20)
+  LON                  String?   @db.VarChar(20)
+  PRODUCTION           Int?      @default(0) @db.TinyInt
+  PRODUCTION_TIMESTAMP DateTime? @db.Timestamp
+  RATE_MODEL_ID        Int?      @db.UnsignedMediumInt
+  STATUS_GA            Int?      @db.TinyInt
+  TARIFA_DIEL          Int?      @db.TinyInt
+  TARIFA_KWH           Decimal?  @db.Decimal(8, 2)
+  TARIFA_KWHGA         Decimal?  @db.Decimal(8, 2)
+  TIMEZONE_ID          Int       @db.UnsignedMediumInt
+  UNIT_NAME            String    @db.VarChar(250)
+  UNIT_CODE_CELSIUS    String?   @db.VarChar(50)
+  UNIT_CODE_API       String?   @db.VarChar(50)
+
+  CITY                CITY?                 @relation(fields: [CITY_ID], references: [CITY_ID])
+  CLIENTS             CLIENTS               @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  RATE_MODELS         RATE_MODELS?          @relation(fields: [RATE_MODEL_ID], references: [MODEL_ID])
+  TIME_ZONES          TIME_ZONES            @relation(fields: [TIMEZONE_ID], references: [ID])
+  ACCESS_DISTRIBUTORS ACCESS_DISTRIBUTORS[]
+  ASSETS              ASSETS[]
+  ASSOCIATIONS        ASSOCIATIONS[]
+  BASELINES           BASELINES?
+  DEVICES_UNITS       DEVICES_UNITS[]
+  ELECTRIC_CIRCUITS   ELECTRIC_CIRCUITS[]
+  ENVIRONMENTS        ENVIRONMENTS[]
+  GROUND_PLANS_UNITS  GROUND_PLANS_UNITS[]
+  ILLUMINATIONS       ILLUMINATIONS[]
+  INTEGRCOOLAUT       INTEGRCOOLAUT[]
+  INTEGRNESS          INTEGRNESS?
+  INTEGROXYN          INTEGROXYN[]
+  INVOICES            INVOICES[]
+  MACHINES            MACHINES[]
+  ROOMS               ROOMS[]
+  SIMCARDS            SIMCARDS[]
+  UNITCLASSES         UNITCLASSES[]
+  UNITSUPERVISORS     UNITSUPERVISORS[]
+  UNITS_OBSERVATIONS  UNITS_OBSERVATIONS[]
+  UNITS_SKETCHES      UNITS_SKETCHES[]
+  VISITATECNICA       VISITATECNICA[]
+  WATERS              WATERS?
+}
+
+model CONDENSERS {
+  ID                         Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  APPL_CFG                   String?  @db.VarChar(100)
+  ASSET_ID                   Int      @db.UnsignedInt
+  CAPACITY_POWER             Decimal? @db.Decimal(8, 2)
+  CAPACITY_UNIT              String?  @db.VarChar(10)
+  COMPRESSOR_NOMINAL_CURRENT Decimal? @db.Decimal(6, 2)
+  EQUIPMENT_POWER            String?  @db.VarChar(150)
+  EVAPORATOR_MODEL_ID        Int?     @db.UnsignedMediumInt
+  INSUFFLATION_SPEED         Decimal? @db.Decimal(6, 4)
+  MACHINE_ID                 Int      @db.UnsignedMediumInt
+  MACHINE_KW                 Decimal? @default(0.0000) @db.Decimal(8, 4)
+  TYPE_CFG                   String?  @db.VarChar(100)
+
+  ASSETS                     ASSETS                      @relation(fields: [ASSET_ID], references: [ID])
+  EVAPORATORS_MODELS         EVAPORATORS_MODELS?         @relation(fields: [EVAPORATOR_MODEL_ID], references: [ID])
+  MACHINES                   MACHINES                    @relation(fields: [MACHINE_ID], references: [ID])
+  CONDENSERS_HEAT_EXCHANGERS CONDENSERS_HEAT_EXCHANGERS?
+  DACS_CONDENSERS            DACS_CONDENSERS[]
+  
+  DUTS_DUO_CONDENSERS        DUTS_DUO_CONDENSERS?
+}
+
+model CONDENSERS_HEAT_EXCHANGERS {
+  ID                Int             @id @default(autoincrement()) @db.UnsignedMediumInt
+  CONDENSER_ID      Int             @db.UnsignedMediumInt
+  HEAT_EXCHANGER_ID Int
+  CONDENSERS        CONDENSERS      @relation(fields: [CONDENSER_ID], references: [ID])
+  HEAT_EXCHANGERS   HEAT_EXCHANGERS @relation(fields: [HEAT_EXCHANGER_ID], references: [ID])
+
+  @@unique([CONDENSER_ID])
+}
+
+model CONFIGS {
+  CFG_ID String  @id @db.VarChar(50)
+  VAL    String? @db.MediumText
+}
+
+model CONVENTIONAL_RATE_PARAMETERS {
+  CONVENTIONALRATE_ID Int           @id @default(autoincrement()) @db.UnsignedMediumInt
+  RATE                String        @db.VarChar(20)
+  RATE_CICLES         RATE_CICLES[]
+}
+
+model COUNTRY {
+  ID          Int           @id @default(autoincrement()) @db.UnsignedMediumInt
+  LAT         String        @db.VarChar(20)
+  LON         String        @db.VarChar(20)
+  NAME        String        @db.VarChar(100)
+  STATEREGION STATEREGION[]
+}
+
+model CURRENT_AUTOMATIONS_PARAMETERS {
+  ID                                           Int                                            @id @default(autoincrement()) @db.UnsignedMediumInt
+  ACTION_MODE                                  String?                                        @db.VarChar(100)
+  ACTION_POST_BEHAVIOR                         String?                                        @db.VarChar(100)
+  ACTION_TIME                                  Int?                                           @db.UnsignedInt
+  DAT_BEGAUT                                   String?                                        @db.VarChar(50)
+  DESIRED_PROG                                 String?                                        @db.MediumText
+  ECO_CFG                                      String?                                        @db.VarChar(50)
+  ECO_INT_TIME                                 Int?                                           @default(5) @db.UnsignedInt
+  ECO_OFST_END                                 Decimal?                                       @db.Decimal(3, 1)
+  ECO_OFST_START                               Decimal?                                       @db.Decimal(3, 1)
+  ENABLE_ECO                                   Int?                                           @db.TinyInt
+  ENABLE_ECO_LOCAL                             Int?                                           @default(0) @db.TinyInt
+  EXT_THERM_CFG                                String?                                        @db.Char(1)
+  FAULTS_DATA                                  String?                                        @db.MediumText
+  FIRST_PROGRAMMING_DATE                       DateTime?                                      @db.DateTime(0)
+  FORCED_BEHAVIOR                              String?                                        @db.VarChar(100)
+  FU_NOM                                       Decimal?                                       @db.Decimal(4, 2)
+  IR_ID_COOL                                   String?                                        @db.VarChar(50)
+  LAST_AUTOMATION_DEVICE_TYPE                  String?                                        @db.VarChar(3)
+  LAST_CHANGE_IN_MULTIPLE_SCHEDULE             DateTime?                                      @db.DateTime(0)
+  LAST_PROG                                    String?                                        @db.MediumText
+  LOWER_HYSTERESIS                             Decimal?                                       @db.Decimal(3, 1)
+  LTC                                          Decimal?                                       @db.Decimal(3, 1)
+  LTI                                          Decimal?                                       @db.Decimal(3, 1)
+  MAXIMUM_TEMPERATURE                          Decimal?                                       @db.Decimal(4, 1)
+  MINIMUM_TEMPERATURE                          Decimal?                                       @db.Decimal(4, 1)
+  MODE                                         String?                                        @db.VarChar(50)
+  PORT_CFG                                     String?                                        @db.VarChar(20)
+  RESENDPER                                    Int?                                           @db.MediumInt
+  SCHEDULE_END_BEHAVIOR                        String?                                        @db.VarChar(100)
+  SCHEDULE_START_BEHAVIOR                      String?                                        @db.VarChar(100)
+  SELF_REFERENCE                               Int?                                           @default(0) @db.TinyInt
+  SETPOINT                                     Decimal?                                       @db.Decimal(3, 1)
+  SETPOINT_ECO_REAL_TIME                       Decimal?                                       @db.Decimal(4, 1)
+  UPPER_HYSTERESIS                             Decimal?                                       @db.Decimal(3, 1)
+  RESEND_PROGRAMMING                           Int?                                           @default(0) @db.TinyInt
+  ILLUMINATIONS_CURRENT_AUTOMATIONS_PARAMETERS ILLUMINATIONS_CURRENT_AUTOMATIONS_PARAMETERS[]
+  MACHINES_CURRENT_AUTOMATIONS_PARAMETERS      MACHINES_CURRENT_AUTOMATIONS_PARAMETERS[]
+}
+
+model CURRENT_DEVICE_STATE {
+  DEVICE_CODE  String   @id @db.VarChar(50)
+  STATE_CONN   String?  @db.VarChar(20)
+  STATE        String?  @db.VarChar(20)
+  TEMPERATURE  Decimal? @db.Decimal(3, 1)
+  TEMPERATURE1 Decimal? @db.Decimal(3, 1)
+}
+
+model CURRENT_DMAS_CONSUMPTION {
+  ID                            Int  @id @default(autoincrement())
+  CURRENT_WATERS_CONSUMPTION_ID Int?
+  DMA_ID                        Int? @db.UnsignedMediumInt
+
+  CURRENT_WATERS_CONSUMPTION CURRENT_WATERS_CONSUMPTION? @relation(fields: [CURRENT_WATERS_CONSUMPTION_ID], references: [ID])
+  DMAS_DEVICES               DMAS_DEVICES?               @relation(fields: [DMA_ID], references: [ID])
+}
+
+model CURRENT_LAAGER_CONSUMPTION {
+  ID                            Int  @id @default(autoincrement())
+  CURRENT_WATERS_CONSUMPTION_ID Int?
+  LAAGER_ID                     Int? @db.UnsignedMediumInt
+
+  CURRENT_WATERS_CONSUMPTION CURRENT_WATERS_CONSUMPTION? @relation(fields: [CURRENT_WATERS_CONSUMPTION_ID], references: [ID])
+  LAAGER                     LAAGER?                     @relation(fields: [LAAGER_ID], references: [ID])
+}
+
+model CURRENT_WATERS_CONSUMPTION {
+  ID                            Int                          @id @default(autoincrement())
+  FRIDAY_AVERAGE_CONSUMPTION    Decimal?                     @db.Decimal(12, 2)
+  FRIDAY_CONSIDERED_DAYS        Int?
+  MONDAY_AVERAGE_CONSUMPTION    Decimal?                     @db.Decimal(12, 2)
+  MONDAY_CONSIDERED_DAYS        Int?
+  REPORT_DATE                   DateTime                     @default(now()) @db.DateTime(0)
+  SATURDAY_AVERAGE_CONSUMPTION  Decimal?                     @db.Decimal(12, 2)
+  SATURDAY_CONSIDERED_DAYS      Int?
+  SUNDAY_AVERAGE_CONSUMPTION    Decimal?                     @db.Decimal(12, 2)
+  SUNDAY_CONSIDERED_DAYS        Int?
+  THURSDAY_AVERAGE_CONSUMPTION  Decimal?                     @db.Decimal(12, 2)
+  THURSDAY_CONSIDERED_DAYS      Int?
+  TIMEZONE_OFFSET               Int?                         @default(-3)
+  TUESDAY_AVERAGE_CONSUMPTION   Decimal?                     @db.Decimal(12, 2)
+  TUESDAY_CONSIDERED_DAYS       Int?
+  WEDNESDAY_AVERAGE_CONSUMPTION Decimal?                     @db.Decimal(12, 2)
+  WEDNESDAY_CONSIDERED_DAYS     Int?
+  CURRENT_DMAS_CONSUMPTION      CURRENT_DMAS_CONSUMPTION[]
+  CURRENT_LAAGER_CONSUMPTION    CURRENT_LAAGER_CONSUMPTION[]
+}
+
+model DACS_ASSET_HEAT_EXCHANGERS {
+  ID                      Int                   @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_HEAT_EXCHANGER_ID Int                   @db.UnsignedMediumInt
+  DAC_DEVICE_ID           Int                   @db.UnsignedMediumInt
+  ASSET_HEAT_EXCHANGERS   ASSET_HEAT_EXCHANGERS @relation(fields: [ASSET_HEAT_EXCHANGER_ID], references: [ID])
+  DACS_DEVICES            DACS_DEVICES          @relation(fields: [DAC_DEVICE_ID], references: [ID])
+
+  @@unique([ASSET_HEAT_EXCHANGER_ID])
+  @@unique([DAC_DEVICE_ID])
+}
+
+model DACS_ASSET_HEAT_EXCHANGERS_HIST {
+  ID                      Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_HEAT_EXCHANGER_ID Int?      @db.UnsignedMediumInt
+  DEVICE_CODE             String?   @db.VarChar(50)
+  END_DATE                DateTime? @db.DateTime(0)
+  START_DATE              DateTime  @db.DateTime(0)
+}
+
+model DACS_AUTOMATIONS {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAC_DEVICE_ID Int          @db.UnsignedMediumInt
+  DISAB         Int?         @db.TinyInt
+  FW_MODE       String?      @db.VarChar(10)
+  MACHINE_ID    Int          @db.UnsignedMediumInt
+  DACS_DEVICES  DACS_DEVICES @relation(fields: [DAC_DEVICE_ID], references: [ID])
+  MACHINES      MACHINES     @relation(fields: [MACHINE_ID], references: [ID])
+
+  @@unique([MACHINE_ID])
+}
+
+model DACS_AUTOMATIONS_HIST {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAC_CODE   String?   @db.VarChar(50)
+  END_DATE   DateTime? @db.DateTime(0)
+  MACHINE_ID Int?      @db.UnsignedMediumInt
+  START_DATE DateTime  @db.DateTime(0)
+
+  @@index([END_DATE])
+  @@index([DAC_CODE(50)])
+}
+
+model DACS_CONDENSERS {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  CONDENSER_ID  Int          @db.UnsignedMediumInt
+  DAC_DEVICE_ID Int          @db.UnsignedMediumInt
+  CONDENSERS    CONDENSERS   @relation(fields: [CONDENSER_ID], references: [ID])
+  DACS_DEVICES  DACS_DEVICES @relation(fields: [DAC_DEVICE_ID], references: [ID])
+
+  @@unique([DAC_DEVICE_ID])
+}
+
+model DACS_CONDENSERS_HIST {
+  ID           Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  CONDENSER_ID Int?      @db.UnsignedMediumInt
+  DEVICE_CODE  String?   @db.VarChar(50)
+  END_DATE     DateTime? @db.DateTime(0)
+  START_DATE   DateTime  @db.DateTime(0)
+}
+
+model DACS_DEVICES {
+  ID                         Int                         @id @default(autoincrement()) @db.UnsignedMediumInt
+  DATE_COMIS                 DateTime?                   @db.DateTime(0)
+  DESCRIPTION                String?                     @db.VarChar(250)
+  DEVICE_ID                  Int                         @db.UnsignedMediumInt
+  P0_POSITN                  String?                     @db.VarChar(20)
+  P0_SENSOR                  String?                     @db.VarChar(50)
+  P1_POSITN                  String?                     @db.VarChar(20)
+  P1_SENSOR                  String?                     @db.VarChar(50)
+  T0                         String?                     @db.VarChar(50)
+  T1                         String?                     @db.VarChar(50)
+  T2                         String?                     @db.VarChar(50)
+  DEVICES                    DEVICES                     @relation(fields: [DEVICE_ID], references: [ID])
+  SENSOR_P0                  SENSORS?                    @relation(name: "SENSOR_P0", fields: [P0_SENSOR], references: [SENSOR_ID])
+  SENSOR_P1                  SENSORS?                    @relation(name: "SENSOR_P1", fields: [P1_SENSOR], references: [SENSOR_ID])
+  DACS_ASSET_HEAT_EXCHANGERS DACS_ASSET_HEAT_EXCHANGERS?
+  DACS_AUTOMATIONS           DACS_AUTOMATIONS[]
+  DACS_CONDENSERS            DACS_CONDENSERS?
+  DACS_EVAPORATORS           DACS_EVAPORATORS?
+  DAC_IMAGES                 DAC_IMAGES[]
+  L1_SOURCE                  L1_SOURCE?
+
+  @@unique([DEVICE_ID])
+}
+
+model DACS_EVAPORATORS {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAC_DEVICE_ID Int          @db.UnsignedMediumInt
+  EVAPORATOR_ID Int          @db.UnsignedMediumInt
+  DACS_DEVICES  DACS_DEVICES @relation(fields: [DAC_DEVICE_ID], references: [ID])
+  EVAPORATORS   EVAPORATORS  @relation(fields: [EVAPORATOR_ID], references: [ID])
+
+  @@unique([DAC_DEVICE_ID])
+}
+
+model DACS_EVAPORATORS_HIST {
+  ID            Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DEVICE_CODE   String?   @db.VarChar(50)
+  END_DATE      DateTime? @db.DateTime(0)
+  EVAPORATOR_ID Int?      @db.UnsignedMediumInt
+  START_DATE    DateTime  @db.DateTime(0)
+}
+
+model DAC_IMAGES {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAC_DEVICE_ID Int          @db.UnsignedMediumInt
+  DAT_UPLOAD    Int          @db.UnsignedInt
+  FILENAME      String       @db.VarChar(100)
+  DACS_DEVICES  DACS_DEVICES @relation(fields: [DAC_DEVICE_ID], references: [ID])
+
+  @@unique([FILENAME])
+}
+
+model DALS {
+  ID        Int @id @default(autoincrement()) @db.UnsignedInt
+  DEVICE_ID Int @db.UnsignedMediumInt
+
+  DEVICES            DEVICES              @relation(fields: [DEVICE_ID], references: [ID])
+  DALS_EXCEPTIONS    DALS_EXCEPTIONS[]
+  DALS_ILLUMINATIONS DALS_ILLUMINATIONS[]
+  DALS_SCHEDULES     DALS_SCHEDULES[]
+  DAL_IMAGES         DAL_IMAGES[]
+}
+
+model DALS_EXCEPTIONS {
+  ID              Int           @id @default(autoincrement())
+  ACTIVE          String?       @db.Char(1)
+  BEGIN_TIME      String        @db.VarChar(5)
+  DAL_ID          Int?          @db.UnsignedInt
+  END_TIME        String        @db.VarChar(5)
+  EXCEPTION_DATE  DateTime      @db.Date
+  ILLUMINATION_ID Int           @db.UnsignedInt
+  REPEAT_YEARLY   String        @db.Char(1)
+  STATUS          String?       @db.Char(1)
+  TITLE           String        @db.VarChar(200)
+  DALS            DALS?         @relation(fields: [DAL_ID], references: [ID])
+  ILLUMINATIONS   ILLUMINATIONS @relation(fields: [ILLUMINATION_ID], references: [ID])
+
+  @@unique([DAL_ID, ILLUMINATION_ID, EXCEPTION_DATE])
+}
+
+model DALS_ILLUMINATIONS {
+  ID              Int            @id @default(autoincrement()) @db.UnsignedInt
+  DAL_ID          Int?           @db.UnsignedInt
+  DEFAULT_MODE    String?        @db.Char(1)
+  FEEDBACK        Int?           @db.UnsignedInt
+  ILLUMINATION_ID Int?           @db.UnsignedInt
+  PORT            Int?           @db.UnsignedInt
+  DALS            DALS?          @relation(fields: [DAL_ID], references: [ID])
+  ILLUMINATIONS   ILLUMINATIONS? @relation(fields: [ILLUMINATION_ID], references: [ID])
+
+  @@unique([DAL_ID, ILLUMINATION_ID])
+}
+
+model DALS_ILLUMINATIONS_HISTORY {
+  ID              Int       @id @default(autoincrement()) @db.UnsignedInt
+  DAL_CODE        String?   @db.VarChar(50)
+  END_DATE        DateTime? @db.DateTime(0)
+  ILLUMINATION_ID Int?      @db.UnsignedInt
+  PORT            Int?      @db.UnsignedInt
+  START_DATE      DateTime  @default(now()) @db.DateTime(0)
+}
+
+model DALS_SCHEDULES {
+  ID              Int           @id @default(autoincrement())
+  ACTIVE          String?       @db.Char(1)
+  BEGIN_TIME      String?       @db.VarChar(5)
+  DAL_ID          Int?          @db.UnsignedInt
+  DAYS            String        @db.VarChar(100)
+  END_TIME        String?       @db.VarChar(5)
+  ILLUMINATION_ID Int           @db.UnsignedInt
+  STATUS          String?       @db.Char(1)
+  TITLE           String        @db.VarChar(200)
+  DALS            DALS?         @relation(fields: [DAL_ID], references: [ID])
+  ILLUMINATIONS   ILLUMINATIONS @relation(fields: [ILLUMINATION_ID], references: [ID])
+
+  @@unique([DAL_ID, ILLUMINATION_ID, BEGIN_TIME, END_TIME, DAYS])
+}
+
+model DAL_IMAGES {
+  ID         Int    @id @default(autoincrement()) @db.UnsignedInt
+  DAL_ID     Int    @db.UnsignedInt
+  DAT_UPLOAD Int    @db.UnsignedInt
+  FILENAME   String @db.VarChar(100)
+
+  DALS DALS @relation(fields: [DAL_ID], references: [ID])
+}
+
+model DAMS_AUTOMATIONS {
+  ID                               Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  CONFIG_ECO_LOCAL_SENT            Int?         @default(0) @db.UnsignedTinyInt
+  DAM_DEVICE_ID                    Int          @db.UnsignedMediumInt
+  MACHINE_ID                       Int          @db.UnsignedMediumInt
+  READ_DUT_TEMPERATURE_FROM_BROKER Boolean?     @default(false)
+  DAMS_DEVICES                     DAMS_DEVICES @relation(fields: [DAM_DEVICE_ID], references: [ID])
+  MACHINES                         MACHINES     @relation(fields: [MACHINE_ID], references: [ID])
+
+  @@unique([MACHINE_ID])
+}
+
+model DAMS_AUTOMATIONS_HIST {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAM_CODE   String?   @db.VarChar(50)
+  END_DATE   DateTime? @db.DateTime(0)
+  MACHINE_ID Int?      @db.UnsignedMediumInt
+  START_DATE DateTime  @db.DateTime(0)
+
+  @@index([END_DATE])
+  @@index([DAM_CODE(50)])
+}
+
+model DAMS_DEVICES {
+  ID                      Int                   @id @default(autoincrement()) @db.UnsignedMediumInt
+  CAN_SELF_REFERENCE      Int?                  @default(0) @db.TinyInt
+  DEVICE_ID               Int                   @db.UnsignedMediumInt
+  DISAB                   Int?                  @db.TinyInt
+  FIRST_COMMANDS_ECO_SENT Int?                  @default(0) @db.TinyInt
+  FW_MODE                 String?               @db.VarChar(10)
+  INSTALLATION_LOCATION   String?               @db.VarChar(250)
+  PLACEMENT               String?               @default("RETURN") @db.VarChar(20)
+  T0_POSITION             String?               @db.VarChar(50)
+  T1_POSITION             String?               @db.VarChar(50)
+  THERSMOSTAT_CFG         Int?                  @db.TinyInt
+  DEVICES                 DEVICES               @relation(fields: [DEVICE_ID], references: [ID])
+  DAMS_AUTOMATIONS        DAMS_AUTOMATIONS[]
+  DAMS_DEVICES_IMAGES     DAMS_DEVICES_IMAGES[]
+  DAMS_ILLUMINATIONS      DAMS_ILLUMINATIONS[]
+
+  @@unique([DEVICE_ID])
+}
+
+model DAMS_DEVICES_IMAGES {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAM_DEVICE_ID Int          @db.UnsignedMediumInt
+  DAT_UPLOAD    Int          @db.UnsignedInt
+  FILENAME      String       @db.VarChar(100)
+  DAMS_DEVICES  DAMS_DEVICES @relation(fields: [DAM_DEVICE_ID], references: [ID])
+
+  @@unique([FILENAME])
+}
+
+model DAMS_ILLUMINATIONS {
+  ID              Int           @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAM_DEVICE_ID   Int           @db.UnsignedMediumInt
+  ILLUMINATION_ID Int           @db.UnsignedInt
+  DAMS_DEVICES    DAMS_DEVICES  @relation(fields: [DAM_DEVICE_ID], references: [ID])
+  ILLUMINATIONS   ILLUMINATIONS @relation(fields: [ILLUMINATION_ID], references: [ID])
+
+  @@unique([ILLUMINATION_ID])
+}
+
+model DAMS_ILLUMINATIONS_HIST {
+  ID              Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAM_CODE        String?   @db.VarChar(50)
+  END_DATE        DateTime? @db.DateTime(0)
+  ILLUMINATION_ID Int?      @db.UnsignedInt
+  START_DATE      DateTime  @db.DateTime(0)
+}
+
+model DAM_SCHEDULES {
+  SCHED_ID                Int       @id @default(autoincrement())
+  ACTIVE                  String?   @db.Char(1)
+  BEGIN_TIME              String?   @db.VarChar(15)
+  DAM_ID                  String    @db.VarChar(50)
+  DAYS                    String?   @db.VarChar(200)
+  END_TIME                String?   @db.VarChar(15)
+  EXCEPTION_DATE          DateTime? @db.Date
+  EXCEPTION_REPEAT_YEARLY String?   @db.Char(1)
+  MACHINE                 Int?      @default(0)
+  MODE                    String?   @db.VarChar(15)
+  NAME                    String?   @db.VarChar(100)
+
+  @@unique([DAM_ID, MACHINE, BEGIN_TIME, END_TIME, DAYS, EXCEPTION_DATE])
+}
+
+model DASHUSERS {
+  EMAIL       String  @id @db.VarChar(175)
+  CITY_ID     String? @db.VarChar(50)
+  CLIENT_BIND Int?    @db.UnsignedMediumInt
+  COMMENTS    String? @db.Text
+  FAULTSFILT  String? @db.VarChar(300)
+  FAULTSNOTIF String? @db.VarChar(10)
+  INVITED_BY  String? @db.VarChar(175)
+  IS_ACTIVE   String? @default("1") @db.Char(1)
+  LAST_ACCESS String? @db.VarChar(50)
+  NOME        String? @db.VarChar(150)
+  NOTIFSBY    String? @db.VarChar(50)
+  PASSWORD    String  @db.VarChar(250)
+  PERMS_U     String? @db.VarChar(50)
+  PHONENB     String? @db.VarChar(50)
+  PICTURE     String? @db.MediumText
+  PREFS       String? @db.MediumText
+  RG          String? @db.VarChar(50)
+  SOBRENOME   String? @db.VarChar(150)
+  UNITREP     String? @db.VarChar(10)
+  UNITREPFILT String? @db.VarChar(300)
+  TRACKER     String? @default("1") @db.Char(1)
+
+  CITY                   CITY?                    @relation(fields: [CITY_ID], references: [CITY_ID])
+  CLIENTS                CLIENTS?                 @relation(fields: [CLIENT_BIND], references: [CLIENT_ID])
+  ANALYSIS_MODELS        ANALYSIS_MODELS[]
+  ANALYSIS_MODELS_SHARED ANALYSIS_MODELS_SHARED[]
+  NOTIFDESTS             NOTIFDESTS[]
+  NOTIFSCFG              NOTIFSCFG[]
+  PREFS_OVERVIEW         PREFS_OVERVIEW[]
+  PWRECOVERTK            PWRECOVERTK[]
+  UNITSUPERVISORS        UNITSUPERVISORS[]
+  USERSCLIENTS           USERSCLIENTS[]
+  USERSTOKENS            USERSTOKENS[]
+  USER_RESPONSAVEL       VISITATECNICA[]          @relation("USER_RESPONSAVEL")
+  USER_TECNICO           VISITATECNICA[]          @relation("USER_TECNICO")
+}
+
+model DEVFWVERS {
+  DEV_ID          String  @id @db.VarChar(50)
+  CERT_CHKDATE    String? @db.VarChar(40)
+  CERT_CURRFW     String? @db.VarChar(100)
+  CERT_DATA       String? @db.MediumText
+  CURRFW_DATE     String? @db.VarChar(40)
+  CURRFW_MSG      String? @db.MediumText
+  CURRFW_VERS     String? @db.VarChar(100)
+  CURRFW_VLDSENT  String? @db.VarChar(40)
+  FWVERSSTATUS    String? @db.VarChar(250)
+  HW_TYPE         String? @db.VarChar(20)
+  OTAPROCSTATUS   String? @db.VarChar(250)
+  TARGFW_RCVDATE  String? @db.VarChar(40)
+  TARGFW_RCVPATH  String? @db.VarChar(100)
+  TARGFW_REQDATE  String? @db.VarChar(40)
+  TARGFW_REQVERS  String? @db.VarChar(100)
+  TARGFW_SENDDATE String? @db.VarChar(40)
+  TARGFW_SENDPATH String? @db.VarChar(100)
+  V_MAJOR        Int?    @db.UnsignedMediumInt // GENERATED COLUMNS UNSUPPORTED BY PRISMA
+  V_MINOR        Int?    @db.UnsignedMediumInt // GENERATED COLUMNS UNSUPPORTED BY PRISMA
+  V_PATCH        Int?    @db.UnsignedMediumInt // GENERATED COLUMNS UNSUPPORTED BY PRISMA
+  V_EXTRA        String? @db.VarChar(50) // GENERATED COLUMNS UNSUPPORTED BY PRISMA
+
+  @@index([HW_TYPE, V_MAJOR, V_MINOR, V_PATCH, V_EXTRA])
+}
+
+model DEVICES {
+  ID              Int              @id @default(autoincrement()) @db.UnsignedMediumInt
+  BT_ID           String?          @db.VarChar(50)
+  DAT_BEGMON      DateTime?        @db.DateTime(0)
+  DEVICE_CODE     String           @db.VarChar(50)
+  LAST_CFG_MODIF  DateTime         @default(now()) @db.DateTime(0)
+  LTE_ICCID       String?          @db.VarChar(100)
+  LTE_NETWORK     String?          @db.VarChar(100)
+  LTE_OPERATOR    String?          @db.VarChar(100)
+  LTE_RSRP        Int?
+  MAC             String?          @db.VarChar(17)
+  VOLATDATA       String?          @db.MediumText
+  DACS_DEVICES    DACS_DEVICES?
+  DALS            DALS[]
+  DAMS_DEVICES    DAMS_DEVICES?
+  DEVICES_CLIENTS DEVICES_CLIENTS?
+  DEVICES_UNITS   DEVICES_UNITS?
+  DEV_POINTS      DEV_POINTS[]
+  DMAS_DEVICES    DMAS_DEVICES[]
+  DMTS            DMTS[]
+  DRIS_DEVICES    DRIS_DEVICES?
+  DUTS_DEVICES    DUTS_DEVICES?
+
+  @@unique([DEVICE_CODE])
+}
+
+model DEVICES_CLIENTS {
+  ID        Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  CLIENT_ID Int?     @db.UnsignedMediumInt
+  DEVICE_ID Int?     @db.UnsignedMediumInt
+  CLIENTS   CLIENTS? @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  DEVICES   DEVICES? @relation(fields: [DEVICE_ID], references: [ID])
+
+  @@unique([DEVICE_ID])
+}
+
+model DEVICES_UNITS {
+  ID        Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  DEVICE_ID Int?     @db.UnsignedMediumInt
+  UNIT_ID   Int?     @db.UnsignedMediumInt
+  DEVICES   DEVICES? @relation(fields: [DEVICE_ID], references: [ID])
+  CLUNITS   CLUNITS? @relation(fields: [UNIT_ID], references: [UNIT_ID])
+
+  @@unique([DEVICE_ID])
+}
+
+model DEV_POINTS {
+  ID        Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  DEVICE_ID Int    @db.UnsignedMediumInt
+  POINT_X   String @db.VarChar(100)
+  POINT_Y   String @db.VarChar(100)
+
+  DEVICES DEVICES @relation(fields: [DEVICE_ID], references: [ID])
+}
+
+model DISTRIBUTORS {
+  DISTRIBUTOR_ID      Int                   @id @default(autoincrement()) @db.UnsignedMediumInt
+  DISTRIBUTOR_LABEL   String                @db.VarChar(40)
+  DISTRIBUTOR_TAG     String                @db.VarChar(30)
+  ACCESS_DISTRIBUTORS ACCESS_DISTRIBUTORS[]
+  RATE_MODELS         RATE_MODELS[]
+}
+
+model DMAS_DEVICES {
+  ID                    Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DEVICE_ID             Int?      @db.UnsignedMediumInt
+  INSTALLATION_DATE     DateTime? @db.Date
+  INSTALLATION_LOCATION String?   @db.VarChar(100)
+  LEAK_ANALYSIS_ID      Int?      @db.UnsignedMediumInt
+  WATER_ID              Int?      @db.UnsignedMediumInt
+
+  DEVICES                  DEVICES?                   @relation(fields: [DEVICE_ID], references: [ID])
+  LEAK_ANALYSIS            LEAK_ANALYSIS?             @relation(fields: [LEAK_ANALYSIS_ID], references: [ID])
+  WATERS                   WATERS?                    @relation(fields: [WATER_ID], references: [ID])
+  CURRENT_DMAS_CONSUMPTION CURRENT_DMAS_CONSUMPTION[]
+  DMAS_IMAGES              DMAS_IMAGES[]
+}
+
+model DMAS_HIST {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DMA_CODE   String?   @db.VarChar(50)
+  END_DATE   DateTime? @db.DateTime(0)
+  START_DATE DateTime  @default(now()) @db.DateTime(0)
+  WATER_ID   Int?      @db.UnsignedMediumInt
+}
+
+model DMAS_IMAGES {
+  ID           Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAT_UPLOAD   Int          @db.UnsignedInt
+  DMA_ID       Int          @db.UnsignedMediumInt
+  FILENAME     String       @db.VarChar(100)
+  DMAS_DEVICES DMAS_DEVICES @relation(fields: [DMA_ID], references: [ID])
+
+  @@unique([FILENAME])
+}
+
+model DMTS {
+  ID        Int @id @default(autoincrement()) @db.UnsignedInt
+  DEVICE_ID Int @db.UnsignedMediumInt
+
+  DEVICES               DEVICES                 @relation(fields: [DEVICE_ID], references: [ID])
+  DMTS_ILLUMINATIONS    DMTS_ILLUMINATIONS[]
+  DMTS_NOBREAKS         DMTS_NOBREAKS[]
+  DMTS_NOBREAK_CIRCUITS DMTS_NOBREAK_CIRCUITS[]
+  DMT_IMAGES            DMT_IMAGES[]
+}
+
+model DMTS_ILLUMINATIONS {
+  ID              Int  @id @default(autoincrement()) @db.UnsignedInt
+  DMT_ID          Int? @db.UnsignedInt
+  ILLUMINATION_ID Int? @db.UnsignedInt
+  PORT            Int? @db.UnsignedInt
+
+  DMTS          DMTS?          @relation(fields: [DMT_ID], references: [ID])
+  ILLUMINATIONS ILLUMINATIONS? @relation(fields: [ILLUMINATION_ID], references: [ID])
+}
+
+model DMTS_ILLUMINATIONS_HISTORY {
+  ID              Int       @id @default(autoincrement()) @db.UnsignedInt
+  DMT_CODE        String?   @db.VarChar(50)
+  END_DATE        DateTime? @db.DateTime(0)
+  ILLUMINATION_ID Int?      @db.UnsignedInt
+  PORT            Int?      @db.UnsignedInt
+  START_DATE      DateTime  @default(now()) @db.DateTime(0)
+}
+
+model DMTS_NOBREAKS {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedInt
+  DMT_ID     Int?      @db.UnsignedInt
+  NOBREAK_ID Int?      @db.UnsignedInt
+  PORT       Int?      @db.UnsignedInt
+  DMTS       DMTS?     @relation(fields: [DMT_ID], references: [ID])
+  NOBREAKS   NOBREAKS? @relation(fields: [NOBREAK_ID], references: [ID])
+}
+
+model DMTS_NOBREAKS_HISTORY {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedInt
+  DMT_CODE   String?   @db.VarChar(50)
+  END_DATE   DateTime? @db.DateTime(0)
+  NOBREAK_ID Int?      @db.UnsignedInt
+  PORT       Int?      @db.UnsignedInt
+  START_DATE DateTime  @default(now()) @db.DateTime(0)
+}
+
+model DMTS_NOBREAK_CIRCUITS {
+  ID     Int  @id @default(autoincrement()) @db.UnsignedInt
+  DMT_ID Int? @db.UnsignedInt
+  PORT   Int? @db.UnsignedInt
+
+  DMTS DMTS? @relation(fields: [DMT_ID], references: [ID])
+
+  @@unique([DMT_ID])
+}
+
+model DMTS_NOBREAK_CIRCUITS_HISTORY {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedInt
+  DMT_CODE   String?   @db.VarChar(50)
+  END_DATE   DateTime? @db.DateTime(0)
+  PORT       Int?      @db.UnsignedInt
+  START_DATE DateTime  @default(now()) @db.DateTime(0)
+}
+
+model DMT_IMAGES {
+  ID         Int    @id @default(autoincrement()) @db.UnsignedInt
+  DAT_UPLOAD Int    @db.UnsignedInt
+  DMT_ID     Int    @db.UnsignedInt
+  FILENAME   String @db.VarChar(100)
+
+  DMTS DMTS @relation(fields: [DMT_ID], references: [ID])
+}
+
+model DRIS_CHILLERS {
+  ID            Int @id @default(autoincrement()) @db.UnsignedMediumInt
+  CHILLER_ID    Int @db.UnsignedMediumInt
+  DRI_DEVICE_ID Int @db.UnsignedMediumInt
+
+  CHILLERS     CHILLERS     @relation(fields: [CHILLER_ID], references: [ID])
+  DRIS_DEVICES DRIS_DEVICES @relation(fields: [DRI_DEVICE_ID], references: [ID])
+
+  @@unique([CHILLER_ID, DRI_DEVICE_ID])
+}
+
+model DRIS_ASSET_HEAT_EXCHANGERS {
+  ID                      Int @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_HEAT_EXCHANGER_ID Int @db.UnsignedMediumInt
+  DRI_DEVICE_ID           Int @db.UnsignedMediumInt
+
+  ASSET_HEAT_EXCHANGERS ASSET_HEAT_EXCHANGERS @relation(fields: [ASSET_HEAT_EXCHANGER_ID], references: [ID])
+  DRIS_DEVICES          DRIS_DEVICES          @relation(fields: [DRI_DEVICE_ID], references: [ID])
+}
+
+model DRIS_ASSET_HEAT_EXCHANGERS_HIST {
+  ID                      Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_HEAT_EXCHANGER_ID Int?      @db.UnsignedMediumInt
+  DEVICE_CODE             String?   @db.VarChar(50)
+  END_DATE                DateTime? @db.DateTime(0)
+  START_DATE              DateTime  @db.DateTime(0)
+}
+
+model DRIS_AUTOMATIONS {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DRI_DEVICE_ID Int          @db.UnsignedMediumInt
+  MACHINE_ID    Int          @db.UnsignedMediumInt
+  DRIS_DEVICES  DRIS_DEVICES @relation(fields: [DRI_DEVICE_ID], references: [ID])
+  MACHINES      MACHINES     @relation(fields: [MACHINE_ID], references: [ID])
+
+  @@unique([MACHINE_ID])
+}
+
+model DRIS_AUTOMATIONS_HIST {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DRI_CODE   String?   @db.VarChar(50)
+  END_DATE   DateTime? @db.DateTime(0)
+  MACHINE_ID Int?      @db.UnsignedMediumInt
+  START_DATE DateTime  @db.DateTime(0)
+
+  @@index([END_DATE])
+  @@index([DRI_CODE(50)])
+}
+
+model DRIS_CHILLER_ALARMS_HIST {
+  ID            Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  ALARM_ID      Int       @db.UnsignedMediumInt
+  DRI_DEVICE_ID Int       @db.UnsignedMediumInt
+  END_DATE      DateTime? @db.DateTime(0)
+  START_DATE    DateTime  @default(now()) @db.DateTime(0)
+
+  CHILLER_CARRIER_ALARMS CHILLER_CARRIER_ALARMS @relation(fields: [ALARM_ID], references: [ID])
+  DRIS_DEVICES           DRIS_DEVICES           @relation(fields: [DRI_DEVICE_ID], references: [ID])
+}
+
+model DRIS_DEVICES {
+  ID                         Int                          @id @default(autoincrement()) @db.UnsignedMediumInt
+  CARDSCFG                   String?                      @db.MediumText
+  DEVICE_ID                  Int                          @db.UnsignedMediumInt
+  LASTCFGSEND                String?                      @db.VarChar(25)
+  SYSTEM_NAME                String?                      @db.VarChar(250)
+  VARSCFG                    String?                      @db.MediumText
+  DEVICES                    DEVICES                      @relation(fields: [DEVICE_ID], references: [ID])
+  DRIS_ASSET_HEAT_EXCHANGERS DRIS_ASSET_HEAT_EXCHANGERS[]
+  DRIS_AUTOMATIONS           DRIS_AUTOMATIONS[]
+  DRIS_CHILLER_ALARMS_HIST   DRIS_CHILLER_ALARMS_HIST[]
+  DRIS_DEVICES_IMAGES        DRIS_DEVICES_IMAGES[]
+  DRIS_ENERGY_DEVICES        DRIS_ENERGY_DEVICES?
+  DRIS_CHILLERS              DRIS_CHILLERS[]
+
+  @@unique([DEVICE_ID])
+}
+
+model DRIS_DEVICES_IMAGES {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAT_UPLOAD    Int          @db.UnsignedInt
+  DRI_DEVICE_ID Int          @db.UnsignedMediumInt
+  FILENAME      String       @db.VarChar(100)
+  DRIS_DEVICES  DRIS_DEVICES @relation(fields: [DRI_DEVICE_ID], references: [ID])
+
+  @@unique([FILENAME])
+}
+
+model DRIS_ENERGY_DEVICES {
+  ID                     Int                  @id @default(autoincrement()) @db.UnsignedMediumInt
+  DRI_DEVICE_ID          Int?                 @db.UnsignedMediumInt
+  ENERGY_DEVICES_INFO_ID Int?                 @db.UnsignedMediumInt
+  DRIS_DEVICES           DRIS_DEVICES?        @relation(fields: [DRI_DEVICE_ID], references: [ID])
+  ENERGY_DEVICES_INFO    ENERGY_DEVICES_INFO? @relation(fields: [ENERGY_DEVICES_INFO_ID], references: [ID])
+
+  @@unique([DRI_DEVICE_ID])
+}
+
+model DRIS_ENERGY_DEVICES_HIST {
+  ID                  Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DRI_CODE            String?   @db.VarChar(50)
+  ELECTRIC_CIRCUIT_ID Int?      @db.UnsignedInt
+  END_DATE            DateTime? @db.DateTime(0)
+  START_DATE          DateTime  @default(now()) @db.DateTime(0)
+}
+
+model DUTS_AUTOMATION {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DISAB         Int?         @db.TinyInt
+  DUT_DEVICE_ID Int          @db.UnsignedMediumInt
+  MACHINE_ID    Int          @db.UnsignedMediumInt
+  DUTS_DEVICES  DUTS_DEVICES @relation(fields: [DUT_DEVICE_ID], references: [ID])
+  MACHINES      MACHINES     @relation(fields: [MACHINE_ID], references: [ID])
+
+  @@unique([MACHINE_ID])
+}
+
+model DUTS_AUTOMATION_HIST {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_CODE   String?   @db.VarChar(50)
+  END_DATE   DateTime? @db.DateTime(0)
+  MACHINE_ID Int?      @db.UnsignedMediumInt
+  START_DATE DateTime  @db.DateTime(0)
+
+  @@index([END_DATE])
+  @@index([DUT_CODE(50)])
+}
+
+model DUTS_DEVICES {
+  ID                           Int                   @id @default(autoincrement()) @db.UnsignedMediumInt
+  DEVICE_ID                    Int                   @db.UnsignedMediumInt
+  LAST_TEMPERATURE_CONTROL_CFG String?               @db.MediumText
+  PLACEMENT                    String?               @default("AMB") @db.VarChar(20)
+  SENDED_MULT_PROG_BEHAVIOR    Int?                  @default(0) @db.TinyInt
+  TEMPERATURE_OFFSET           Decimal?              @db.Decimal(4, 1)
+  VARS                         String?               @db.VarChar(50)
+  DEVICES                      DEVICES               @relation(fields: [DEVICE_ID], references: [ID])
+  DUTS_AUTOMATION              DUTS_AUTOMATION[]
+  DUTS_DEVICES_IMAGES          DUTS_DEVICES_IMAGES[]
+  DUTS_DEVICES_ROOMS           DUTS_DEVICES_ROOMS[]
+  DUTS_DUO                     DUTS_DUO?
+  DUTS_IR_CODES                DUTS_IR_CODES[]
+  DUTS_MONITORING              DUTS_MONITORING?
+  DUTS_QA                      DUTS_QA[]
+
+  @@unique([DEVICE_ID])
+}
+
+model DUTS_DEVICES_IMAGES {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAT_UPLOAD    DateTime?    @db.DateTime(0)
+  DUT_DEVICE_ID Int          @db.UnsignedMediumInt
+  FILENAME      String       @db.VarChar(100)
+  DUTS_DEVICES  DUTS_DEVICES @relation(fields: [DUT_DEVICE_ID], references: [ID])
+
+  @@unique([FILENAME])
+}
+
+model DUTS_DEVICES_ROOMS {
+  ID            Int @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_DEVICE_ID Int @db.UnsignedMediumInt
+  ROOM_ID       Int @db.UnsignedMediumInt
+
+  DUTS_DEVICES DUTS_DEVICES @relation(fields: [DUT_DEVICE_ID], references: [ID])
+  ROOMS        ROOMS        @relation(fields: [ROOM_ID], references: [ROOM_ID])
+}
+
+model DUTS_DUO {
+  ID                  Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_DEVICE_ID       Int          @db.UnsignedMediumInt
+  INVERT_TEMPERATURES Int?         @db.TinyInt
+  REDEFINED_SENSORS   Int?         @default(0) @db.UnsignedTinyInt
+  SENSOR_AUTOM        Int?         @db.UnsignedTinyInt
+  DUTS_DEVICES        DUTS_DEVICES @relation(fields: [DUT_DEVICE_ID], references: [ID])
+
+  @@unique([DUT_DEVICE_ID])
+
+  DUTS_DUO_ASSET_HEAT_EXCHANGERS    DUTS_DUO_ASSET_HEAT_EXCHANGERS?
+  DUTS_DUO_CONDENSERS               DUTS_DUO_CONDENSERS?
+  DUTS_DUO_EVAPORATORS              DUTS_DUO_EVAPORATORS?
+}
+
+model DUTS_DUO_ASSET_HEAT_EXCHANGERS {
+  ID                        Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_HEAT_EXCHANGER_ID   Int          @db.UnsignedMediumInt
+  DUT_DUO_ID                Int          @db.UnsignedMediumInt
+  ASSET_HEAT_EXCHANGERS     ASSET_HEAT_EXCHANGERS  @relation(fields: [ASSET_HEAT_EXCHANGER_ID], references: [ID])
+  DUTS_DUO                  DUTS_DUO               @relation(fields: [DUT_DUO_ID], references: [ID])
+
+  @@unique([ASSET_HEAT_EXCHANGER_ID])
+  @@unique([DUT_DUO_ID])
+  @@unique([ASSET_HEAT_EXCHANGER_ID, DUT_DUO_ID])
+}
+
+model DUTS_DUO_ASSET_HEAT_EXCHANGERS_HIST {
+  ID                      Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_HEAT_EXCHANGER_ID Int?      @db.UnsignedMediumInt
+  DUT_CODE                String?   @db.VarChar(50)
+  END_DATE                DateTime? @db.DateTime(0)
+  START_DATE              DateTime  @db.DateTime(0)
+}
+
+model DUTS_DUO_CONDENSERS {
+  ID                  Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  CONDENSER_ID        Int          @db.UnsignedMediumInt
+  DUT_DUO_ID          Int          @db.UnsignedMediumInt
+  CONDENSERS          CONDENSERS   @relation(fields: [CONDENSER_ID], references: [ID])
+  DUTS_DUO            DUTS_DUO     @relation(fields: [DUT_DUO_ID], references: [ID])
+
+  @@unique([CONDENSER_ID])
+  @@unique([DUT_DUO_ID])
+  @@unique([CONDENSER_ID, DUT_DUO_ID])
+}
+
+model DUTS_DUO_EVAPORATORS {
+  ID                  Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  EVAPORATOR_ID       Int          @db.UnsignedMediumInt
+  DUT_DUO_ID          Int          @db.UnsignedMediumInt
+  EVAPORATORS         EVAPORATORS  @relation(fields: [EVAPORATOR_ID], references: [ID])
+  DUTS_DUO            DUTS_DUO     @relation(fields: [DUT_DUO_ID], references: [ID])
+
+  @@unique([EVAPORATOR_ID])
+  @@unique([DUT_DUO_ID])
+  @@unique([EVAPORATOR_ID, DUT_DUO_ID])
+}
+
+model DUTS_DUO_HIST {
+  ID            Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_CODE      String?   @db.VarChar(50)
+  END_DATE      DateTime? @db.DateTime(0)
+  EVAPORATOR_ID Int?      @db.UnsignedMediumInt
+  START_DATE    DateTime  @db.DateTime(0)
+}
+
+model DUTS_EXCEPTIONS_STATUS {
+  DUT_EXCEPTION_STATUS_ID          Int     @id @db.TinyInt
+  DUT_EXCEPTION_STATUS_DESCRIPTION String? @db.VarChar(11)
+}
+
+model DUTS_IR_CODES {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_DEVICE_ID Int          @db.UnsignedMediumInt
+  IR_CODE_ID    Int          @db.UnsignedMediumInt
+  DUTS_DEVICES  DUTS_DEVICES @relation(fields: [DUT_DEVICE_ID], references: [ID])
+  IR_CODES      IR_CODES     @relation(fields: [IR_CODE_ID], references: [ID])
+
+  @@unique([IR_CODE_ID])
+}
+
+model DUTS_MONITORING {
+  ID             Int              @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_DEVICE_ID  Int              @db.UnsignedMediumInt
+  ENVIRONMENT_ID Int              @db.UnsignedMediumInt
+  DUTS_DEVICES   DUTS_DEVICES     @relation(fields: [DUT_DEVICE_ID], references: [ID])
+  ENVIRONMENTS   ENVIRONMENTS     @relation(fields: [ENVIRONMENT_ID], references: [ID])
+  DUTS_REFERENCE DUTS_REFERENCE[]
+
+  @@unique([DUT_DEVICE_ID])
+}
+
+model DUTS_MONITORING_HIST {
+  ID             Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_CODE       String?   @db.VarChar(50)
+  END_DATE       DateTime? @db.DateTime(0)
+  ENVIRONMENT_ID Int?      @db.UnsignedMediumInt
+  START_DATE     DateTime  @db.DateTime(0)
+}
+
+model DUTS_QA {
+  ID            Int @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_DEVICE_ID Int @db.UnsignedMediumInt
+
+  DUTS_DEVICES DUTS_DEVICES @relation(fields: [DUT_DEVICE_ID], references: [ID])
+}
+
+model DUTS_QA_HIST {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_CODE   String?   @db.VarChar(50)
+  END_DATE   DateTime? @db.DateTime(0)
+  START_DATE DateTime  @db.DateTime(0)
+}
+
+model DUTS_REFERENCE {
+  ID                Int             @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_MONITORING_ID Int             @db.UnsignedMediumInt
+  MACHINE_ID        Int             @db.UnsignedMediumInt
+  DUTS_MONITORING   DUTS_MONITORING @relation(fields: [DUT_MONITORING_ID], references: [ID])
+  MACHINES          MACHINES        @relation(fields: [MACHINE_ID], references: [ID])
+
+  @@unique([DUT_MONITORING_ID, MACHINE_ID])
+}
+
+model DUTS_REFERENCE_HIST {
+  ID         Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  DUT_CODE   String?   @db.VarChar(50)
+  END_DATE   DateTime? @db.DateTime(0)
+  MACHINE_ID Int?      @db.UnsignedMediumInt
+  START_DATE DateTime  @db.DateTime(0)
+}
+
+model ECOCMDHIST {
+  devId    String @db.VarChar(50)
+  ts       String @db.VarChar(50)
+  duration Int    @db.UnsignedMediumInt
+  mode     String @db.VarChar(50)
+
+  @@id([devId, ts])
+}
+
+model ELECTRIC_CIRCUITS {
+  ID                              Int                               @id @default(autoincrement()) @db.UnsignedInt
+  ESTABLISHMENT_NAME              String?                           @db.VarChar(150)
+  UNIT_ID                         Int?                              @db.UnsignedMediumInt
+  CLUNITS                         CLUNITS?                          @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  ELECTRIC_CIRCUITS_ILLUMINATIONS ELECTRIC_CIRCUITS_ILLUMINATIONS[]
+  ELECTRIC_CIRCUITS_MACHINES      ELECTRIC_CIRCUITS_MACHINES[]
+  ELECTRIC_CIRCUITS_NOBREAKS      ELECTRIC_CIRCUITS_NOBREAKS[]
+  ENERGY_DEVICES_INFO             ENERGY_DEVICES_INFO[]
+  ELECTRIC_CIRCUIT_CHILD          ELECTRIC_CIRCUITS_TREE[]          @relation("ELECTRIC_CIRCUIT_CHILD")
+  ELECTRIC_CIRCUIT_SOURCE         ELECTRIC_CIRCUITS_TREE[]          @relation("ELECTRIC_CIRCUIT_SOURCE")
+
+  @@unique([ESTABLISHMENT_NAME, UNIT_ID])
+}
+
+model ELECTRIC_CIRCUITS_ILLUMINATIONS {
+  ID                  Int  @id @default(autoincrement()) @db.UnsignedMediumInt
+  ELECTRIC_CIRCUIT_ID Int? @db.UnsignedInt
+  ILLUMINATION_ID     Int? @db.UnsignedInt
+
+  ELECTRIC_CIRCUITS ELECTRIC_CIRCUITS? @relation(fields: [ELECTRIC_CIRCUIT_ID], references: [ID])
+  ILLUMINATIONS     ILLUMINATIONS?     @relation(fields: [ILLUMINATION_ID], references: [ID])
+}
+
+model ELECTRIC_CIRCUITS_MACHINES {
+  ID                  Int  @id @default(autoincrement()) @db.UnsignedMediumInt
+  ELECTRIC_CIRCUIT_ID Int? @db.UnsignedInt
+  MACHINE_ID          Int? @db.UnsignedMediumInt
+
+  ELECTRIC_CIRCUITS ELECTRIC_CIRCUITS? @relation(fields: [ELECTRIC_CIRCUIT_ID], references: [ID])
+  MACHINES          MACHINES?          @relation(fields: [MACHINE_ID], references: [ID])
+}
+
+model ELECTRIC_CIRCUITS_NOBREAKS {
+  ID                  Int  @id @default(autoincrement()) @db.UnsignedMediumInt
+  ELECTRIC_CIRCUIT_ID Int? @db.UnsignedInt
+  NOBREAK_ID          Int? @db.UnsignedInt
+
+  ELECTRIC_CIRCUITS ELECTRIC_CIRCUITS? @relation(fields: [ELECTRIC_CIRCUIT_ID], references: [ID])
+  NOBREAKS          NOBREAKS?          @relation(fields: [NOBREAK_ID], references: [ID])
+}
+
+model ELECTRIC_CIRCUITS_TREE {
+  ID                         Int  @id @default(autoincrement()) @db.UnsignedMediumInt
+  ELECTRIC_CIRCUIT_CHILD_ID  Int? @db.UnsignedInt
+  ELECTRIC_CIRCUIT_SOURCE_ID Int? @db.UnsignedInt
+
+  ELECTRIC_CIRCUIT_CHILD  ELECTRIC_CIRCUITS? @relation(name: "ELECTRIC_CIRCUIT_CHILD", fields: [ELECTRIC_CIRCUIT_CHILD_ID], references: [ID])
+  ELECTRIC_CIRCUIT_SOURCE ELECTRIC_CIRCUITS? @relation(name: "ELECTRIC_CIRCUIT_SOURCE", fields: [ELECTRIC_CIRCUIT_SOURCE_ID], references: [ID])
+}
+
+model EMAILSEND {
+  EML_ID     Int     @id @default(autoincrement()) @db.UnsignedInt
+  CATEGORY   String? @db.VarChar(175)
+  DAT_SEND   String  @db.VarChar(50)
+  EMAIL_DATA String  @db.MediumText
+  LAST_TRY   String? @db.VarChar(50)
+}
+
+model ANALYSIS_MODELS {
+  ID                     Int     @id @default(autoincrement()) @db.UnsignedInt
+  INTERESTS_ORGANIZATION String? @db.VarChar(50)
+  NAME                   String  @db.VarChar(50)
+  USER_ID                String? @db.VarChar(175)
+  IS_HISTORIC            Int?    @db.UnsignedInt
+
+  DASHUSERS                      DASHUSERS?                       @relation(fields: [USER_ID], references: [EMAIL])
+  ANALYSIS_MODELS_FILTERS_VALUES ANALYSIS_MODELS_FILTERS_VALUES[]
+  ANALYSIS_MODELS_SHARED         ANALYSIS_MODELS_SHARED[]
+
+  @@unique([NAME, USER_ID])
+}
+
+model ANALYSIS_MODELS_FILTERS_VALUES {
+  ID       Int    @id @default(autoincrement()) @db.UnsignedInt
+  CATEGORY String @db.VarChar(50)
+  FIELD    String @db.VarChar(50)
+  MODEL_ID Int    @db.UnsignedInt
+  VALUE    String @db.VarChar(50)
+
+  ANALYSIS_MODELS ANALYSIS_MODELS @relation(fields: [MODEL_ID], references: [ID])
+}
+
+model ANALYSIS_MODELS_SHARED {
+  MODEL_ID        Int             @db.UnsignedInt
+  USER_ID         String          @db.VarChar(175)
+  ANALYSIS_MODELS ANALYSIS_MODELS @relation(fields: [MODEL_ID], references: [ID])
+  DASHUSERS       DASHUSERS       @relation(fields: [USER_ID], references: [EMAIL])
+
+  @@id([MODEL_ID, USER_ID])
+}
+
+model ENERGY_DEVICES_INFO {
+  ID                  Int     @id @default(autoincrement()) @db.UnsignedMediumInt
+  ELECTRIC_CIRCUIT_ID Int?    @db.UnsignedInt
+  MANUFACTURER_ID     Int     @db.UnsignedInt
+  MODEL               String? @db.VarChar(50)
+  SERIAL              String? @db.VarChar(100)
+
+  ELECTRIC_CIRCUITS       ELECTRIC_CIRCUITS?        @relation(fields: [ELECTRIC_CIRCUIT_ID], references: [ID])
+  ENERGY_MANUFACTURERS    ENERGY_MANUFACTURERS      @relation(fields: [MANUFACTURER_ID], references: [MANUFACTURER_ID])
+  DRIS_ENERGY_DEVICES     DRIS_ENERGY_DEVICES[]
+  GREENANT_ENERGY_DEVICES GREENANT_ENERGY_DEVICES[]
+}
+
+model ENERGY_MANUFACTURERS {
+  MANUFACTURER_ID     Int                   @id @default(autoincrement()) @db.UnsignedInt
+  NAME                String                @db.VarChar(100)
+  ENERGY_DEVICES_INFO ENERGY_DEVICES_INFO[]
+  ENERGY_METER_MODELS ENERGY_METER_MODELS[]
+
+  @@unique([NAME])
+}
+
+model ENERGY_METER_MODELS {
+  MODEL_ID             Int                  @id @default(autoincrement()) @db.UnsignedInt
+  MANUFACTURER_ID      Int                  @db.UnsignedInt
+  NAME                 String               @db.VarChar(100)
+  ENERGY_MANUFACTURERS ENERGY_MANUFACTURERS @relation(fields: [MANUFACTURER_ID], references: [MANUFACTURER_ID])
+
+  @@unique([NAME])
+}
+
+model ENVIRONMENTS {
+  ID               Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  ENVIRONMENT_NAME String?  @db.VarChar(250)
+  ENVIRONMENT_TYPE String?  @db.VarChar(100)
+  IS_VISIBLE       Boolean? @default(true)
+  UNIT_ID          Int      @db.UnsignedMediumInt
+
+  CLUNITS                 CLUNITS                  @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  DUTS_MONITORING         DUTS_MONITORING[]
+  ENVIRONMENTS_ROOM_TYPES ENVIRONMENTS_ROOM_TYPES?
+  REFRIGERATES            REFRIGERATES[]
+}
+
+model ENVIRONMENTS_ROOM_TYPES {
+  ID             Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  ENVIRONMENT_ID Int          @db.UnsignedMediumInt
+  RTYPE_ID       Int          @db.UnsignedMediumInt
+  ENVIRONMENTS   ENVIRONMENTS @relation(fields: [ENVIRONMENT_ID], references: [ID])
+  ROOMTYPES      ROOMTYPES    @relation(fields: [RTYPE_ID], references: [RTYPE_ID])
+
+  @@unique([ENVIRONMENT_ID])
+}
+
+model ETE_30_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedTinyInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(35)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  String? @default("0") @db.Char(1)
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model EVAPORATORS {
+  ID                         Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  APPL_CFG                   String?  @db.VarChar(100)
+  ASSET_ID                   Int      @db.UnsignedInt
+  CAPACITY_POWER             Decimal? @db.Decimal(8, 2)
+  CAPACITY_UNIT              String?  @db.VarChar(10)
+  COMPRESSOR_NOMINAL_CURRENT Decimal? @db.Decimal(6, 2)
+  EQUIPMENT_POWER            String?  @db.VarChar(150)
+  EVAPORATOR_MODEL_ID        Int?     @db.UnsignedMediumInt
+  INSUFFLATION_SPEED         Decimal? @db.Decimal(6, 4)
+  MACHINE_ID                 Int      @db.UnsignedMediumInt
+  MACHINE_KW                 Decimal? @default(0.0000) @db.Decimal(8, 4)
+  TYPE_CFG                   String?  @db.VarChar(100)
+
+  ASSETS                      ASSETS                       @relation(fields: [ASSET_ID], references: [ID])
+  EVAPORATORS_MODELS          EVAPORATORS_MODELS?          @relation(fields: [EVAPORATOR_MODEL_ID], references: [ID])
+  MACHINES                    MACHINES                     @relation(fields: [MACHINE_ID], references: [ID])
+  DACS_EVAPORATORS            DACS_EVAPORATORS[]
+  DUTS_DUO_EVAPORATORS        DUTS_DUO_EVAPORATORS?
+  EVAPORATORS_HEAT_EXCHANGERS EVAPORATORS_HEAT_EXCHANGERS?
+}
+
+model EVAPORATORS_HEAT_EXCHANGERS {
+  ID                Int             @id @default(autoincrement()) @db.UnsignedMediumInt
+  EVAPORATOR_ID     Int             @db.UnsignedMediumInt
+  HEAT_EXCHANGER_ID Int
+  EVAPORATORS       EVAPORATORS     @relation(fields: [EVAPORATOR_ID], references: [ID])
+  HEAT_EXCHANGERS   HEAT_EXCHANGERS @relation(fields: [HEAT_EXCHANGER_ID], references: [ID])
+
+  @@unique([EVAPORATOR_ID])
+}
+
+model EVAPORATORS_MODELS {
+  ID                           Int                     @id @default(autoincrement()) @db.UnsignedMediumInt
+  A_C_TYPE                     String?                 @db.VarChar(250)
+  COMPRESSOR_TYPE              String?                 @db.VarChar(250)
+  CONDENSER_MODEL              String?                 @db.VarChar(250)
+  ELECTRICAL_SUPPLY            String?                 @db.VarChar(250)
+  EQUIPMENT_TYPE               String?                 @db.VarChar(250)
+  EVAPORATOR_MODEL             String?                 @db.VarChar(250)
+  EXCHANGER_MODEL              String?                 @db.VarChar(250)
+  FAN_POWER                    Decimal?                @db.Decimal(6, 2)
+  FIXED_OR_INVERTER            String?                 @db.VarChar(250)
+  FLUID                        String?                 @db.VarChar(250)
+  INSUFFLATION_AREA            Decimal?                @db.Decimal(6, 4)
+  INSUFFLATION_SPEED           Decimal?                @db.Decimal(5, 2)
+  MANUFACTURER                 String?                 @db.VarChar(250)
+  MAX_CURRENT_RLA_COMPRESSOR_1 Decimal?                @db.Decimal(5, 2)
+  MAX_CURRENT_RLA_COMPRESSOR_2 Decimal?                @db.Decimal(5, 2)
+  NOMINAL_CAPACITY             Decimal?                @db.Decimal(6, 2)
+  NOMINAL_CURRENT_COMPRESSOR_1 Decimal?                @db.Decimal(5, 2)
+  NOMINAL_CURRENT_COMPRESSOR_2 Decimal?                @db.Decimal(5, 2)
+  NOMINAL_FLOW                 Int?                    @db.UnsignedMediumInt
+  OPERATION_MODE               String?                 @db.VarChar(250)
+  OVERHEATING_MAX              Decimal?                @db.Decimal(5, 2)
+  OVERHEATING_MIN              Decimal?                @db.Decimal(5, 2)
+  RETURN_AREA                  Decimal?                @db.Decimal(6, 4)
+  RETURN_SPEED                 Decimal?                @db.Decimal(5, 2)
+  SUBCOOLING_MAX               Decimal?                @db.Decimal(5, 2)
+  SUBCOOLING_MIN               Decimal?                @db.Decimal(5, 2)
+  TOTAL_RATED_ELECTRICAL_POWER Decimal?                @db.Decimal(6, 2)
+  ASSET_HEAT_EXCHANGERS        ASSET_HEAT_EXCHANGERS[]
+  CONDENSERS                   CONDENSERS[]
+  EVAPORATORS                  EVAPORATORS[]
+}
+
+model EXCEPTIONS {
+  ID                   Int                 @id @default(autoincrement()) @db.UnsignedMediumInt
+  AUTOMATION_PERIOD_ID Int                 @db.UnsignedMediumInt
+  EXCEPTION_DATE       DateTime?           @db.Date
+  REPEAT_YEARLY        String?             @db.Char(1)
+  AUTOMATIONS_PERIODS  AUTOMATIONS_PERIODS @relation(fields: [AUTOMATION_PERIOD_ID], references: [ID])
+
+  @@unique([AUTOMATION_PERIOD_ID])
+}
+
+model FANCOILS {
+  FANCOIL_ID       String  @id @db.VarChar(50)
+  DUT_ID_FROM_ROOM String? @db.VarChar(50)
+  FANCOIL_MANUF    String? @db.VarChar(50)
+  FANCOIL_MODEL    String? @db.VarChar(50)
+  HAS_ROOMTYPE     Int?    @db.TinyInt
+  ROOM_NAME        String? @db.VarChar(250)
+  RTYPE_ID         Int?    @db.UnsignedMediumInt
+  THERM_MANUF      String? @db.VarChar(50)
+  THERM_MODEL      String? @db.VarChar(50)
+  THERM_T_MAX      Int?
+  THERM_T_MIN      Int?
+  VALVE_MANUF      String? @db.VarChar(50)
+  VALVE_MODEL      String? @db.VarChar(50)
+  VALVE_TYPE       String? @db.VarChar(50)
+
+  ROOMTYPES ROOMTYPES? @relation(fields: [RTYPE_ID], references: [RTYPE_ID])
+
+  @@index([DUT_ID_FROM_ROOM])
+}
+
+model FAULTS_DATAS {
+  ID              Int           @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_HEALTH_ID Int           @db.UnsignedMediumInt
+  DATA            String?       @db.MediumText
+  ASSETS_HEALTH   ASSETS_HEALTH @relation(fields: [ASSET_HEALTH_ID], references: [ID])
+
+  @@unique([ASSET_HEALTH_ID])
+}
+
+model FAULTS_INFO {
+  faultId    String @id @db.VarChar(100)
+  faultDesc  String @db.VarChar(255)
+  faultLevel Int
+  faultName  String @db.VarChar(255)
+}
+
+model FERIADOS {
+  DAT_FER  String @id @db.VarChar(50)
+  DESC_FER String @db.VarChar(150)
+}
+
+model FIRMWARES {
+  S3_PATH    String @id @db.VarChar(150)
+  DAT_UPLOAD String @db.VarChar(50)
+  FW_VERS    String @db.VarChar(50)
+  HW_REV     String @db.VarChar(50)
+}
+
+model GREENANT_ENERGY_DEVICES {
+  ID                     Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  ENERGY_DEVICES_INFO_ID Int?   @db.UnsignedMediumInt
+  GREENANT_CODE          String @db.VarChar(50)
+
+  ENERGY_DEVICES_INFO ENERGY_DEVICES_INFO? @relation(fields: [ENERGY_DEVICES_INFO_ID], references: [ID])
+}
+
+model GREENANT_ENERGY_DEVICES_HIST {
+  ID                  Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  ELECTRIC_CIRCUIT_ID Int?      @db.UnsignedInt
+  END_DATE            DateTime? @db.DateTime(0)
+  GREENANT_CODE       String?   @db.VarChar(50)
+  START_DATE          DateTime  @default(now()) @db.DateTime(0)
+}
+
+model GROUND_PLANS {
+  ID                  Int                   @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAT_UPLOAD          DateTime              @db.DateTime(0)
+  FILENAME            String                @db.VarChar(100)
+  NAME_GP             String                @db.VarChar(100)
+  GROUND_PLANS_POINTS GROUND_PLANS_POINTS[]
+  GROUND_PLANS_UNITS  GROUND_PLANS_UNITS?
+}
+
+model GROUND_PLANS_POINTS {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  GROUNDPLAN_ID Int          @db.UnsignedMediumInt
+  POINT_ID      Int          @db.UnsignedMediumInt
+  GROUND_PLANS  GROUND_PLANS @relation(fields: [GROUNDPLAN_ID], references: [ID])
+
+  @@unique([POINT_ID])
+}
+
+model GROUND_PLANS_UNITS {
+  ID            Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  GROUNDPLAN_ID Int          @db.UnsignedMediumInt
+  UNIT_ID       Int          @db.UnsignedMediumInt
+  GROUND_PLANS  GROUND_PLANS @relation(fields: [GROUNDPLAN_ID], references: [ID])
+  CLUNITS       CLUNITS      @relation(fields: [UNIT_ID], references: [UNIT_ID])
+
+  @@unique([GROUNDPLAN_ID])
+}
+
+model HEALTH_BEFORE_OFFLINE {
+  ID              Int           @id @default(autoincrement()) @db.UnsignedMediumInt
+  ASSET_HEALTH_ID Int           @db.UnsignedMediumInt
+  H_OFFL          String?       @db.MediumText
+  ASSETS_HEALTH   ASSETS_HEALTH @relation(fields: [ASSET_HEALTH_ID], references: [ID])
+
+  @@unique([ASSET_HEALTH_ID])
+}
+
+model HEAT_EXCHANGERS {
+  ID                          Int                           @id @default(autoincrement())
+  DELTA_T_MAX                 Int?
+  DELTA_T_MIN                 Int?
+  NAME                        String?                       @db.MediumText
+  T_MAX                       Int?
+  T_MIN                       Int?
+  ASSET_HEAT_EXCHANGERS       ASSET_HEAT_EXCHANGERS[]
+  CONDENSERS_HEAT_EXCHANGERS  CONDENSERS_HEAT_EXCHANGERS[]
+  EVAPORATORS_HEAT_EXCHANGERS EVAPORATORS_HEAT_EXCHANGERS[]
+}
+
+model HYDROMETER_MODELS {
+  ID               Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  HYDROMETER_MODEL String?  @db.VarChar(100)
+  WATERS           WATERS[]
+
+  @@unique([HYDROMETER_MODEL])
+}
+
+model ILLUMINATIONS {
+  ID           Int     @id @default(autoincrement()) @db.UnsignedInt
+  GRID_CURRENT Int?
+  GRID_VOLTAGE Int?
+  NAME         String? @db.VarChar(150)
+  UNIT_ID      Int?    @db.UnsignedMediumInt
+
+  CLUNITS                                      CLUNITS?                                       @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  DALS_EXCEPTIONS                              DALS_EXCEPTIONS[]
+  DALS_ILLUMINATIONS                           DALS_ILLUMINATIONS[]
+  DALS_SCHEDULES                               DALS_SCHEDULES[]
+  DAMS_ILLUMINATIONS                           DAMS_ILLUMINATIONS?
+  DMTS_ILLUMINATIONS                           DMTS_ILLUMINATIONS[]
+  ELECTRIC_CIRCUITS_ILLUMINATIONS              ELECTRIC_CIRCUITS_ILLUMINATIONS[]
+  ILLUMINATIONS_CURRENT_AUTOMATIONS_PARAMETERS ILLUMINATIONS_CURRENT_AUTOMATIONS_PARAMETERS[]
+  ILLUMINATION_IMAGES                          ILLUMINATION_IMAGES[]
+}
+
+model ILLUMINATIONS_CURRENT_AUTOMATIONS_PARAMETERS {
+  ID                               Int @id @default(autoincrement()) @db.UnsignedMediumInt
+  CURRENT_AUTOMATION_PARAMETERS_ID Int @db.UnsignedMediumInt
+  ILLUMINATION_ID                  Int @db.UnsignedInt
+
+  CURRENT_AUTOMATIONS_PARAMETERS CURRENT_AUTOMATIONS_PARAMETERS @relation(fields: [CURRENT_AUTOMATION_PARAMETERS_ID], references: [ID])
+  ILLUMINATIONS                  ILLUMINATIONS                  @relation(fields: [ILLUMINATION_ID], references: [ID])
+}
+
+model ILLUMINATION_IMAGES {
+  ID              Int    @id @default(autoincrement()) @db.UnsignedInt
+  DAT_UPLOAD      Int    @db.UnsignedInt
+  FILENAME        String @db.VarChar(100)
+  ILLUMINATION_ID Int    @db.UnsignedInt
+
+  ILLUMINATIONS ILLUMINATIONS @relation(fields: [ILLUMINATION_ID], references: [ID])
+}
+
+model INTEGRCOOLAUT {
+  COOLAUT_ID String  @id @db.VarChar(50)
+  CARDSCFG   String? @db.MediumText
+  UNIT_ID    Int     @db.UnsignedMediumInt
+  VARSCFG    String? @db.MediumText
+
+  CLUNITS CLUNITS @relation(fields: [UNIT_ID], references: [UNIT_ID])
+}
+
+model INTEGRNESS {
+  NESS_ID String  @db.VarChar(50)
+  UNIT_ID Int     @db.UnsignedMediumInt
+  CLUNITS CLUNITS @relation(fields: [UNIT_ID], references: [UNIT_ID])
+
+  @@unique([NESS_ID])
+  @@unique([UNIT_ID])
+}
+
+model INTEGROXYN {
+  EQUIP_PATH String  @id @db.VarChar(50)
+  CARDSCFG   String? @db.MediumText
+  SITE_PATH  String  @db.VarChar(50)
+  TS_SEEN    String? @db.VarChar(20)
+  UNIT_ID    Int     @db.UnsignedMediumInt
+  VARSCFG    String? @db.MediumText
+
+  CLUNITS CLUNITS @relation(fields: [UNIT_ID], references: [UNIT_ID])
+}
+
+model INVOICES {
+  INVOICE_ID     Int      @id @default(autoincrement()) @db.UnsignedInt
+  INVOICE_DATE   DateTime @db.Date
+  TOTAL_CHARGES  Decimal? @db.Decimal(12, 2)
+  TOTAL_MEASURED Decimal? @db.Decimal(12, 2)
+  UNIT_ID        Int      @db.UnsignedMediumInt
+  CLUNITS        CLUNITS  @relation(fields: [UNIT_ID], references: [UNIT_ID])
+
+  @@unique([UNIT_ID, INVOICE_DATE])
+}
+
+model IR_CODES {
+  ID            Int            @id @default(autoincrement()) @db.UnsignedMediumInt
+  IR_ID         String         @db.VarChar(50)
+  CMD_DESC      String?        @db.Text
+  CMD_TYPE      String?        @db.VarChar(50)
+  CODE_DATA     String         @db.MediumText
+  TEMPERATURE   Decimal?       @db.Decimal(3, 1)
+  DUTS_IR_CODES DUTS_IR_CODES?
+}
+
+model KRON_IKRON_03_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(30)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  String? @default("0") @db.Char(1)
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model KRON_MULTK_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(50)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  String? @default("0") @db.Char(1)
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model KRON_MULTK_120_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(50)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  String? @default("0") @db.Char(1)
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model L1_SOURCE {
+  ID              Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAC_DEVICE_ID   Int          @db.UnsignedMediumInt
+  SELECTED_L1_SIM String?      @db.VarChar(100)
+  DACS_DEVICES    DACS_DEVICES @relation(fields: [DAC_DEVICE_ID], references: [ID])
+
+  @@unique([DAC_DEVICE_ID])
+}
+
+model LAAGER {
+  ID                    Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  CARDSCFG              String?   @db.MediumText
+  INSTALLATION_DATE     DateTime? @db.Date
+  INSTALLATION_LOCATION String?   @db.VarChar(100)
+  LAAGER_CODE           String    @db.VarChar(10)
+  WATER_ID              Int?      @db.UnsignedMediumInt
+
+  WATERS                     WATERS?                      @relation(fields: [WATER_ID], references: [ID])
+  CURRENT_LAAGER_CONSUMPTION CURRENT_LAAGER_CONSUMPTION[]
+  LAAGER_DAILY_HISTORY_USAGE LAAGER_DAILY_HISTORY_USAGE[]
+  LAAGER_HISTORY_USAGE       LAAGER_HISTORY_USAGE[]
+  LAAGER_IMAGES              LAAGER_IMAGES[]
+
+  @@unique([LAAGER_CODE])
+}
+
+model LAAGER_DAILY_HISTORY_USAGE {
+  ID                    Int      @id @default(autoincrement()) @db.MediumInt
+  ESTIMATED_USAGE       Int?     @default(0) @db.TinyInt
+  HISTORY_DATE          DateTime @db.Date
+  LAAGER_ID             Int      @db.UnsignedMediumInt
+  READING               Decimal? @db.Decimal(15, 4)
+  READING_TIME          String?  @db.VarChar(10)
+  USAGE_AT_READING_TIME Decimal? @db.Decimal(15, 4)
+  LAAGER                LAAGER   @relation(fields: [LAAGER_ID], references: [ID])
+
+  @@unique([HISTORY_DATE, READING_TIME, LAAGER_ID])
+}
+
+model LAAGER_HIST {
+  ID          Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  END_DATE    DateTime? @db.DateTime(0)
+  LAAGER_CODE String?   @db.VarChar(10)
+  START_DATE  DateTime  @default(now()) @db.DateTime(0)
+  WATER_ID    Int?      @db.UnsignedMediumInt
+}
+
+model LAAGER_HISTORY_USAGE {
+  ID              Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAY_READING     Decimal? @db.Decimal(15, 4)
+  DAY_USAGE       Decimal? @db.Decimal(15, 4)
+  ESTIMATED_USAGE Int?     @default(0) @db.TinyInt
+  LAAGER_ID       Int      @db.UnsignedMediumInt
+  RECORD_DATE     String   @db.VarChar(10)
+  LAAGER          LAAGER   @relation(fields: [LAAGER_ID], references: [ID])
+
+  @@unique([RECORD_DATE, LAAGER_ID])
+}
+
+model LAAGER_IMAGES {
+  ID         Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAT_UPLOAD Int    @db.UnsignedInt
+  FILENAME   String @db.VarChar(100)
+  LAAGER_ID  Int    @db.UnsignedMediumInt
+  LAAGER     LAAGER @relation(fields: [LAAGER_ID], references: [ID])
+
+  @@unique([FILENAME])
+}
+
+model LEAK_ANALYSIS {
+  ID                                   Int            @id @default(autoincrement()) @db.UnsignedMediumInt
+  CAPACITY_CONSUMPTION                 Int?           @default(1) @db.TinyInt
+  CAPACITY_CONSUMPTION_TIMES           Int?           @default(2)
+  CONTINUOUS_CONSUMPTION               Int?           @default(1) @db.TinyInt
+  CONTINUOUS_CONSUMPTION_MIN_VALUE     Int?           @default(20)
+  CONTINUOUS_CONSUMPTION_TIME_INTERVAL Int?           @default(12)
+  HISTORY_CONSUMPTION                  Int?           @default(1) @db.TinyInt
+  HISTORY_CONSUMPTION_TIMES            Int?           @default(2)
+  LEAK_ANALYSIS                        Int?           @default(1) @db.TinyInt
+  DMAS_DEVICES                         DMAS_DEVICES[]
+}
+
+model MACHINES {
+  ID                      Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  APPLICATION             String?   @db.VarChar(100)
+  BRAND                   String?   @db.VarChar(100)
+  FLUID_TYPE              String?   @db.VarChar(100)
+  INSTALLATION_DATE       DateTime? @db.Date
+  NAME                    String    @db.VarChar(250)
+  PERFORMANCE_COEFFICIENT Decimal?  @default(3.00) @db.Decimal(4, 2)
+  RATED_POWER             Decimal?  @default(0.0000) @db.Decimal(10, 4)
+  TYPE                    String?   @db.VarChar(100)
+  UNIT_ID                 Int?      @db.UnsignedMediumInt
+
+  CLUNITS                                 CLUNITS?                                  @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  ADDITIONAL_MACHINE_PARAMETERS           ADDITIONAL_MACHINE_PARAMETERS[]
+  AIR_CURTAINS                            AIR_CURTAINS[]
+  ASSET_HEAT_EXCHANGERS                   ASSET_HEAT_EXCHANGERS[]
+  ASSOC_MACHINES                          ASSOC_MACHINES[]
+  CONDENSERS                              CONDENSERS[]
+  DACS_AUTOMATIONS                        DACS_AUTOMATIONS?
+  DAMS_AUTOMATIONS                        DAMS_AUTOMATIONS?
+  DRIS_AUTOMATIONS                        DRIS_AUTOMATIONS?
+  DUTS_AUTOMATION                         DUTS_AUTOMATION?
+  DUTS_REFERENCE                          DUTS_REFERENCE[]
+  ELECTRIC_CIRCUITS_MACHINES              ELECTRIC_CIRCUITS_MACHINES[]
+  EVAPORATORS                             EVAPORATORS[]
+  MACHINES_AUTOMATIONS_PERIODS            MACHINES_AUTOMATIONS_PERIODS[]
+  MACHINES_CURRENT_AUTOMATIONS_PARAMETERS MACHINES_CURRENT_AUTOMATIONS_PARAMETERS[]
+  MACHINE_IMAGES                          MACHINE_IMAGES[]
+  REFRIGERATES                            REFRIGERATES?
+  CHILLERS                                CHILLERS[]
+}
+
+model MACHINES_AUTOMATIONS_PERIODS {
+  ID                   Int @id @default(autoincrement()) @db.UnsignedInt
+  AUTOMATION_PERIOD_ID Int @db.UnsignedMediumInt
+  MACHINE_ID           Int @db.UnsignedMediumInt
+
+  AUTOMATIONS_PERIODS AUTOMATIONS_PERIODS @relation(fields: [AUTOMATION_PERIOD_ID], references: [ID])
+  MACHINES            MACHINES            @relation(fields: [MACHINE_ID], references: [ID])
+}
+
+model MACHINES_CURRENT_AUTOMATIONS_PARAMETERS {
+  ID                               Int @id @default(autoincrement()) @db.UnsignedMediumInt
+  CURRENT_AUTOMATION_PARAMETERS_ID Int @db.UnsignedMediumInt
+  MACHINE_ID                       Int @db.UnsignedMediumInt
+
+  CURRENT_AUTOMATIONS_PARAMETERS CURRENT_AUTOMATIONS_PARAMETERS @relation(fields: [CURRENT_AUTOMATION_PARAMETERS_ID], references: [ID])
+  MACHINES                       MACHINES                       @relation(fields: [MACHINE_ID], references: [ID])
+}
+
+model MACHINES_SETPOINTS_AUTOMATION_HIST {
+  ID               Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  END_DATE         DateTime? @db.DateTime(0)
+  LOWER_HYSTERESIS Decimal?  @db.Decimal(3, 1)
+  MACHINE_ID       Int?      @db.UnsignedMediumInt
+  SETPOINT         Decimal?  @db.Decimal(3, 1)
+  START_DATE       DateTime  @db.DateTime(0)
+  UPPER_HYSTERESIS Decimal?  @db.Decimal(3, 1)
+
+  @@index([END_DATE])
+  @@index([MACHINE_ID])
+}
+
+model MACHINE_IMAGES {
+  ID         Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  DAT_UPLOAD Int    @db.UnsignedInt
+  FILENAME   String @db.VarChar(100)
+  MACHINE_ID Int    @db.UnsignedMediumInt
+
+  MACHINES MACHINES @relation(fields: [MACHINE_ID], references: [ID])
+}
+
+model MANUFACT_DEVS {
+  CLIENT_ID Int     @db.UnsignedMediumInt
+  IDEND     String  @db.VarChar(50)
+  IDSTART   String  @db.VarChar(50)
+  CLIENTS   CLIENTS @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+
+  @@unique([IDSTART, IDEND])
+}
+
+model MSGTOSERVICE {
+  MSG_ID   Int    @id @default(autoincrement()) @db.UnsignedInt
+  DAT_SEND String @db.VarChar(50)
+  DEST     String @db.VarChar(175)
+  MSG      String @db.MediumText
+  ORIG     String @db.VarChar(175)
+}
+
+model NEXUS_II_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedTinyInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(30)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  String? @default("0") @db.Char(1)
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model NOBREAKS {
+  ID                       Int  @id @default(autoincrement()) @db.UnsignedInt
+  ASSET_ID                 Int? @db.UnsignedInt
+  INPUT_ELECTRIC_CURRENT   Int?
+  INPUT_VOLTAGE            Int?
+  NOMINAL_BATTERY_CAPACITY Int?
+  NOMINAL_BATTERY_LIFE     Int?
+  NOMINAL_POTENTIAL        Int?
+  OUTPUT_ELECTRIC_CURRENT  Int?
+  OUTPUT_VOLTAGE           Int?
+
+  ASSETS                        ASSETS?                         @relation(fields: [ASSET_ID], references: [ID])
+  ADDITIONAL_NOBREAK_PARAMETERS ADDITIONAL_NOBREAK_PARAMETERS[]
+  DMTS_NOBREAKS                 DMTS_NOBREAKS[]
+  ELECTRIC_CIRCUITS_NOBREAKS    ELECTRIC_CIRCUITS_NOBREAKS[]
+  NOBREAK_IMAGES                NOBREAK_IMAGES[]
+}
+
+model NOBREAK_IMAGES {
+  ID         Int    @id @default(autoincrement()) @db.UnsignedInt
+  DAT_UPLOAD Int    @db.UnsignedInt
+  FILENAME   String @db.VarChar(100)
+  NOBREAK_ID Int    @db.UnsignedInt
+
+  NOBREAKS NOBREAKS @relation(fields: [NOBREAK_ID], references: [ID])
+}
+
+model NOTIFDESTS {
+  NOTIF_ID  Int       @db.UnsignedMediumInt
+  USER_ID   String    @db.VarChar(175)
+  NOTIFSCFG NOTIFSCFG @relation(fields: [NOTIF_ID], references: [NOTIF_ID])
+  DASHUSERS DASHUSERS @relation(fields: [USER_ID], references: [EMAIL])
+
+  @@id([NOTIF_ID, USER_ID])
+}
+
+model NOTIFSCFG {
+  NOTIF_ID           Int     @id @default(autoincrement()) @db.UnsignedMediumInt
+  CLIENT_ID          Int     @db.UnsignedMediumInt
+  COND_OP            String? @db.VarChar(100)
+  COND_PARS          String? @db.MediumText
+  COND_SECONDARY_VAL String? @db.VarChar(100)
+  COND_VAL           String? @db.VarChar(100)
+  COND_VAR           String? @db.VarChar(100)
+  CREATED_BY         String  @db.VarChar(175)
+  DAT_CREATE         String? @db.VarChar(50)
+  FILT_DEVS          String? @db.MediumText
+  NAME               String? @db.VarChar(250)
+  NOTIF_DATA         String? @db.MediumText
+  NOTIF_MSG          String? @db.VarChar(1000)
+
+  CLIENTS       CLIENTS         @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  DASHUSERS     DASHUSERS       @relation(fields: [CREATED_BY], references: [EMAIL])
+  NOTIFDESTS    NOTIFDESTS[]
+  NOTIFSCHEDULE NOTIFSCHEDULE[]
+}
+
+model NOTIFSCHEDULE {
+  ID            Int     @id @default(autoincrement())
+  COND_VAL_MAX  String? @db.VarChar(50)
+  DEV_ID        String  @db.VarChar(50)
+  NOTIF_ID      Int     @db.UnsignedMediumInt
+  ROOM_NAME     String? @db.VarChar(50)
+  TIMESTAMP_END String? @db.VarChar(50)
+  TIMESTAMP_INI String  @db.VarChar(50)
+  UNIT_ID       Int
+
+  NOTIFSCFG NOTIFSCFG @relation(fields: [NOTIF_ID], references: [NOTIF_ID])
+}
+
+model OBSERVATIONS {
+  ID                 Int                 @id @default(autoincrement()) @db.UnsignedMediumInt
+  DATE_OBS           DateTime            @db.DateTime(0)
+  ISVISIBLE          Int                 @default(1) @db.TinyInt
+  OBS                String              @db.Text
+  USER_ID            String              @db.VarChar(175)
+  UNITS_OBSERVATIONS UNITS_OBSERVATIONS?
+}
+
+model PREFS_OVERVIEW {
+  ID                     Int    @id @default(autoincrement())
+  EMAIL                  String @db.VarChar(175)
+  PREFS_OVERVIEW_INFO_ID Int
+
+  DASHUSERS           DASHUSERS           @relation(fields: [EMAIL], references: [EMAIL])
+  PREFS_OVERVIEW_INFO PREFS_OVERVIEW_INFO @relation(fields: [PREFS_OVERVIEW_INFO_ID], references: [ID])
+}
+
+model PREFS_OVERVIEW_INFO {
+  ID             Int              @id @default(autoincrement())
+  IS_ACTIVE      String?          @default("1") @db.Char(1)
+  IS_EXPANDED    String?          @default("0") @db.Char(1)
+  POSITION       Int?             @db.UnsignedMediumInt
+  TITLE          String           @db.VarChar(100)
+  TYPE           Int?             @db.UnsignedMediumInt
+  PREFS_OVERVIEW PREFS_OVERVIEW[]
+}
+
+model PWRECOVERTK {
+  TOKEN     String @id @db.VarChar(50)
+  DAT_ISSUE String @db.VarChar(50)
+  EMAIL     String @db.VarChar(175)
+
+  DASHUSERS DASHUSERS @relation(fields: [EMAIL], references: [EMAIL])
+}
+
+model P_CAUSES {
+  ID                 Int                  @id @default(autoincrement()) @db.UnsignedMediumInt
+  CAUSES             String               @db.VarChar(200)
+  ASSETS_HEALTH_HIST ASSETS_HEALTH_HIST[]
+}
+
+model RATE_CICLES {
+  CICLE_ID            Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  COFINS              Decimal  @db.Decimal(4, 1)
+  CONVENTIONALRATE_ID Int?     @db.UnsignedMediumInt
+  END_CICLE_DATE      String?  @db.VarChar(10)
+  GREENRATE_ID        Int?     @db.UnsignedMediumInt
+  ICMS                Decimal  @db.Decimal(4, 1)
+  MODEL_ID            Int?     @db.UnsignedMediumInt
+  PIS                 Decimal  @db.Decimal(4, 1)
+  START_CICLE_DATE    String   @db.VarChar(10)
+  VIGENCYCICLE        Boolean?
+  WHITERATE_ID        Int?     @db.UnsignedMediumInt
+
+  CONVENTIONAL_RATE_PARAMETERS CONVENTIONAL_RATE_PARAMETERS? @relation(fields: [CONVENTIONALRATE_ID], references: [CONVENTIONALRATE_ID])
+  RATE_MODELS                  RATE_MODELS?                  @relation(fields: [MODEL_ID], references: [MODEL_ID])
+  WHITE_RATE_PARAMETERS        WHITE_RATE_PARAMETERS?        @relation(fields: [WHITERATE_ID], references: [WHITERATE_ID])
+}
+
+model RATE_GROUPS {
+  RATEGROUP_ID   Int              @id @default(autoincrement()) @db.UnsignedMediumInt
+  GROUP_NAME     String           @db.VarChar(2)
+  RATE_MODALITY  RATE_MODALITY[]
+  RATE_SUBGROUPS RATE_SUBGROUPS[]
+}
+
+model RATE_MODALITY {
+  RATEMODALITY_ID   Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  RATEGROUP_ID      Int    @db.UnsignedMediumInt
+  RATEMODALITY_NAME String @db.VarChar(15)
+
+  RATE_GROUPS RATE_GROUPS   @relation(fields: [RATEGROUP_ID], references: [RATEGROUP_ID])
+  RATE_MODELS RATE_MODELS[]
+}
+
+model RATE_MODELS {
+  MODEL_ID        Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  CLIENT_ID       Int    @db.UnsignedMediumInt
+  DISTRIBUTOR_ID  Int?   @db.UnsignedMediumInt
+  MODEL_NAME      String @db.VarChar(50)
+  RATEMODALITY_ID Int    @db.UnsignedMediumInt
+  SUBGROUP_ID     Int    @db.UnsignedMediumInt
+
+  CLIENTS        CLIENTS        @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  DISTRIBUTORS   DISTRIBUTORS?  @relation(fields: [DISTRIBUTOR_ID], references: [DISTRIBUTOR_ID])
+  RATE_MODALITY  RATE_MODALITY  @relation(fields: [RATEMODALITY_ID], references: [RATEMODALITY_ID])
+  RATE_SUBGROUPS RATE_SUBGROUPS @relation(fields: [SUBGROUP_ID], references: [SUBGROUP_ID])
+  CLUNITS        CLUNITS[]
+  RATE_CICLES    RATE_CICLES[]
+}
+
+model RATE_SUBGROUPS {
+  SUBGROUP_ID   Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  RATEGROUP_ID  Int    @db.UnsignedMediumInt
+  SUBGROUP_NAME String @db.VarChar(5)
+
+  RATE_GROUPS RATE_GROUPS   @relation(fields: [RATEGROUP_ID], references: [RATEGROUP_ID])
+  RATE_MODELS RATE_MODELS[]
+}
+
+model REFRIGERATES {
+  ID             Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  ENVIRONMENT_ID Int          @db.UnsignedMediumInt
+  MACHINE_ID     Int          @db.UnsignedMediumInt
+  ENVIRONMENTS   ENVIRONMENTS @relation(fields: [ENVIRONMENT_ID], references: [ID])
+  MACHINES       MACHINES     @relation(fields: [MACHINE_ID], references: [ID])
+
+  @@unique([MACHINE_ID])
+}
+
+model ROOMS {
+  ROOM_ID    Int     @id @default(autoincrement()) @db.UnsignedMediumInt
+  CLIENT_ID  Int     @db.UnsignedMediumInt
+  ROOM_NAME  String  @db.VarChar(250)
+  ROOM_PROGS String? @db.MediumText
+  UNIT_ID    Int     @db.UnsignedMediumInt
+
+  CLIENTS            CLIENTS              @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  CLUNITS            CLUNITS              @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  DUTS_DEVICES_ROOMS DUTS_DEVICES_ROOMS[]
+}
+
+model ROOMTYPES {
+  RTYPE_ID   Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  CLIENT_ID  Int      @db.UnsignedMediumInt
+  CO2MAX     Decimal? @db.Decimal(5, 1)
+  HUMIMAX    Int?     @db.MediumInt
+  HUMIMIN    Int?     @db.MediumInt
+  RTYPE_NAME String   @db.VarChar(250)
+  TUSEMAX    Decimal? @db.Decimal(4, 1)
+  TUSEMIN    Decimal? @db.Decimal(4, 1)
+  USEPERIOD  String?  @db.MediumText
+
+  CLIENTS                 CLIENTS                   @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  ENVIRONMENTS_ROOM_TYPES ENVIRONMENTS_ROOM_TYPES[]
+  FANCOILS                FANCOILS[]
+  VAVS                    VAVS[]
+}
+
+model SCHEDULES {
+  ID                   Int                 @id @default(autoincrement()) @db.UnsignedMediumInt
+  AUTOMATION_PERIOD_ID Int                 @db.UnsignedMediumInt
+  DAYS                 String              @db.VarChar(100)
+  NEED_MULT_SCHEDULES  String              @db.Char(1)
+  AUTOMATIONS_PERIODS  AUTOMATIONS_PERIODS @relation(fields: [AUTOMATION_PERIOD_ID], references: [ID])
+  SETPOINTS_PERIODS    SETPOINTS_PERIODS?
+
+  @@unique([AUTOMATION_PERIOD_ID])
+}
+
+model SCHNEIDER_PM210_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(10)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  Int     @db.UnsignedTinyInt
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model SCHNEIDER_PM2100_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(10)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  Int     @db.UnsignedTinyInt
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model SCHNEIDER_PM9C_COMMANDS {
+  ADDRESS     Int     @id @db.UnsignedInt
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(10)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  HAS_SIGNAL  Int     @db.UnsignedTinyInt
+  ID          Int     @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  R_W         String  @db.VarChar(3)
+  SIZE        Int     @db.UnsignedTinyInt
+  SYS_ID      Int     @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model SENSORS {
+  SENSOR_ID   String  @id @db.VarChar(50)
+  SENSOR_NAME String? @db.VarChar(50)
+
+  SENSOR_P0 DACS_DEVICES[] @relation("SENSOR_P0")
+  SENSOR_P1 DACS_DEVICES[] @relation("SENSOR_P1")
+
+  SENSOR_FIRMWARE_CURVES SENSOR_FIRMWARE_CURVES[]
+}
+
+model SENSOR_FIRMWARE_CURVES {
+  ID             Int     @id @default(autoincrement()) @db.UnsignedMediumInt
+  SENSOR_ID      String  @db.VarChar(50)
+  SENSORS        SENSORS @relation(fields: [SENSOR_ID], references: [SENSOR_ID])
+  MULT_QUAD      Decimal @db.Decimal(6, 4) @default(0)
+  MULT_LIN       Decimal @db.Decimal(6, 4)
+  OFST           Decimal @db.Decimal(6, 4)
+  MIN_FW_VERSION String  @default("0.0.0") @db.VarChar(100)
+  V_MAJOR        Int?    @db.UnsignedMediumInt // GENERATED COLUMNS UNSUPPORTED BY PRISMA
+  V_MINOR        Int?    @db.UnsignedMediumInt // GENERATED COLUMNS UNSUPPORTED BY PRISMA
+  V_PATCH        Int?    @db.UnsignedMediumInt // GENERATED COLUMNS UNSUPPORTED BY PRISMA
+  V_EXTRA        String? @db.VarChar(50) // GENERATED COLUMNS UNSUPPORTED BY PRISMA
+}
+
+model SETPOINTS_PERIODS {
+  ID                         Int                          @id @default(autoincrement()) @db.UnsignedMediumInt
+  BEGIN_TIME                 String?                      @db.VarChar(5)
+  END_TIME                   String?                      @db.VarChar(5)
+  PERIOD_TITLE               DateTime?                    @db.Date
+  SCHEDULE_ID                Int                          @db.UnsignedMediumInt
+  SCHEDULES                  SCHEDULES                    @relation(fields: [SCHEDULE_ID], references: [ID])
+  SETPOINTS_PERIODS_SETTINGS SETPOINTS_PERIODS_SETTINGS[]
+
+  @@unique([SCHEDULE_ID])
+}
+
+model SETPOINTS_PERIODS_SETTINGS {
+  ID                           Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  AUTOMATION_PARAMETERS_ID     Int      @db.UnsignedMediumInt
+  FIRST_TEMPERATURE_REFERENCE  Decimal  @db.Decimal(3, 1)
+  RULE_TYPE                    String   @db.VarChar(15)
+  SECOND_TEMPERATURE_REFERENCE Decimal? @db.Decimal(3, 1)
+  SETPOINT_PERIOD_ID           Int      @db.UnsignedMediumInt
+
+  AUTOMATIONS_PARAMETERS AUTOMATIONS_PARAMETERS @relation(fields: [AUTOMATION_PARAMETERS_ID], references: [ID])
+  SETPOINTS_PERIODS      SETPOINTS_PERIODS      @relation(fields: [SETPOINT_PERIOD_ID], references: [ID])
+}
+
+model SIMCARDS {
+  ICCID            String    @id @db.VarChar(40)
+  ACCESSPOINT      String?   @db.VarChar(300)
+  ASSOCIATION_DATE DateTime? @db.DateTime(0)
+  CLIENT           Int?      @db.UnsignedMediumInt
+  ID               Int?
+  MACACCESSPOINT   String?   @db.VarChar(300)
+  MACREPEATER      String?   @db.VarChar(300)
+  MODEM            String?   @db.VarChar(300)
+  UNIT             Int?      @db.UnsignedMediumInt
+
+  CLIENTS         CLIENTS?          @relation(fields: [CLIENT], references: [CLIENT_ID])
+  CLUNITS         CLUNITS?          @relation(fields: [UNIT], references: [UNIT_ID])
+  SIMCARDS_IMAGES SIMCARDS_IMAGES[]
+}
+
+model SIMCARDS_IMAGES {
+  DAT_UPLOAD Int      @db.UnsignedInt
+  FILENAME   String   @db.VarChar(100)
+  SIMCARD_ID String   @db.VarChar(40)
+  SIMCARDS   SIMCARDS @relation(fields: [SIMCARD_ID], references: [ICCID])
+
+  @@unique([FILENAME])
+}
+
+model STATEREGION {
+  ID         Int     @id @default(autoincrement()) @db.UnsignedMediumInt
+  COUNTRY_ID Int     @db.UnsignedMediumInt
+  FULL_NAME  String  @db.VarChar(100)
+  LAT        String? @db.VarChar(20)
+  LON        String? @db.VarChar(20)
+  NAME       String  @db.VarChar(100)
+
+  COUNTRY COUNTRY @relation(fields: [COUNTRY_ID], references: [ID])
+  CITY    CITY[]
+}
+
+model TIME_ZONES {
+  ID               Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  AREA             String    @db.VarChar(100)
+  TIME_ZONE_OFFSET Int
+  CLUNITS          CLUNITS[]
+}
+
+model TYPEHEALTHCHANGE {
+  ID                 Int                  @id @default(autoincrement())
+  TYPECHANGE         String?              @db.VarChar(100)
+  ASSETS_HEALTH_HIST ASSETS_HEALTH_HIST[]
+}
+
+model UNITCLASSES {
+  CLASS_ID Int     @db.UnsignedMediumInt
+  UNIT_ID  Int     @db.UnsignedMediumInt
+  CLASSES  CLASSES @relation(fields: [CLASS_ID], references: [CLASS_ID])
+  CLUNITS  CLUNITS @relation(fields: [UNIT_ID], references: [UNIT_ID])
+
+  @@id([CLASS_ID, UNIT_ID])
+}
+
+model UNITSUPERVISORS {
+  UNIT_ID   Int       @db.UnsignedMediumInt
+  USER_ID   String    @db.VarChar(175)
+  CLUNITS   CLUNITS   @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  DASHUSERS DASHUSERS @relation(fields: [USER_ID], references: [EMAIL])
+
+  @@id([USER_ID, UNIT_ID])
+}
+
+model UNITS_OBSERVATIONS {
+  ID           Int          @id @default(autoincrement()) @db.UnsignedMediumInt
+  OBS_ID       Int          @db.UnsignedMediumInt
+  UNIT_ID      Int          @db.UnsignedMediumInt
+  OBSERVATIONS OBSERVATIONS @relation(fields: [OBS_ID], references: [ID])
+  CLUNITS      CLUNITS      @relation(fields: [UNIT_ID], references: [UNIT_ID])
+
+  @@unique([OBS_ID])
+}
+
+model UNITS_SKETCHES {
+  UNIT_SKETCH_ID Int     @id @default(autoincrement())
+  DAT_UPLOAD     Int     @db.UnsignedInt
+  FILENAME       String  @db.VarChar(100)
+  ISVISIBLE      Int     @default(1) @db.TinyInt
+  NAME_SKETCH    String? @db.VarChar(100)
+  UNIT_ID        Int     @db.UnsignedMediumInt
+  CLUNITS        CLUNITS @relation(fields: [UNIT_ID], references: [UNIT_ID])
+
+  @@unique([FILENAME])
+}
+
+model USERSCLIENTS {
+  CLIENT_ID Int       @db.UnsignedMediumInt
+  USER_ID   String    @db.VarChar(175)
+  PERMS     String?   @db.VarChar(50)
+  UNITS     String?   @db.MediumText
+  CLIENTS   CLIENTS   @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  DASHUSERS DASHUSERS @relation(fields: [USER_ID], references: [EMAIL])
+
+  @@id([USER_ID, CLIENT_ID])
+}
+
+model USERSTOKENS {
+  TOKEN     String  @id @db.VarChar(50)
+  DAT_ISSUE String  @db.VarChar(50)
+  EMAIL     String  @db.VarChar(175)
+  EXTRADATA String? @db.Text
+  TKTYPE    String  @db.VarChar(50)
+
+  DASHUSERS DASHUSERS @relation(fields: [EMAIL], references: [EMAIL])
+}
+
+model VAVS {
+  VAV_ID      String  @id @db.VarChar(50)
+  BOX_MANUF   String? @db.VarChar(50)
+  BOX_MODEL   String? @db.VarChar(50)
+  ISVISIBLE   Int     @default(1) @db.TinyInt
+  ROOM_NAME   String? @db.VarChar(250)
+  RTYPE_ID    Int?    @db.UnsignedMediumInt
+  THERM_MANUF String? @db.VarChar(50)
+  THERM_MODEL String? @db.VarChar(50)
+  VALVE_MANUF String? @db.VarChar(50)
+  VALVE_MODEL String? @db.VarChar(50)
+  VALVE_TYPE  String? @db.VarChar(50)
+
+  ROOMTYPES ROOMTYPES? @relation(fields: [RTYPE_ID], references: [RTYPE_ID])
+}
+
+model VAV_BAC_6000_AMLN_COMMANDS {
+  ADDRESS     Int     @db.UnsignedTinyInt
+  R_W         String  @db.VarChar(3)
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(30)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  ID          Int     @default(1) @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  SIZE        Int     @default(1) @db.UnsignedTinyInt
+  SYS_ID      Int     @default(1) @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@id([ADDRESS, R_W])
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model VAV_BAC_COMMANDS {
+  ADDRESS     Int     @db.UnsignedTinyInt
+  R_W         String  @db.VarChar(3)
+  ALIAS       String? @db.VarChar(30)
+  COMMAND     String  @db.VarChar(20)
+  DESCRIPTION String  @db.VarChar(50)
+  FORMULA     String? @db.VarChar(30)
+  FUNC_ID     Int     @db.UnsignedTinyInt
+  ID          Int     @default(1) @db.UnsignedTinyInt
+  IP          String? @db.VarChar(30)
+  SIZE        Int     @default(1) @db.UnsignedTinyInt
+  SYS_ID      Int     @default(1) @db.UnsignedTinyInt
+  UNIT        String? @db.VarChar(10)
+
+  @@id([ADDRESS, R_W])
+  @@unique([ALIAS])
+  @@unique([COMMAND])
+}
+
+model VISITATECNICA {
+  ID                       Int     @id @default(autoincrement())
+  AMBIENTES                Int?
+  AUTORIZACAO_IMG          String? @db.MediumText
+  CARACTERISTICA           String  @db.MediumText
+  CLIENT_ID                Int     @db.UnsignedMediumInt
+  MAQUINAS                 Int?
+  OBSERVACAO               String? @db.MediumText
+  OBSERVACAO_REAGENDAMENTO String? @db.MediumText
+  PLANTABAIXA_IMG          String? @db.MediumText
+  RESPONSAVEL              String  @db.VarChar(175)
+  STATUS_ID                Int     @default(1)
+  TECNICO_ID               String  @db.VarChar(175)
+  UNIT_ID                  Int     @db.UnsignedMediumInt
+  VTDATE                   String  @db.VarChar(15)
+  VTDELETED                String? @default("0") @db.Char(1)
+  VTTIME                   String  @db.VarChar(15)
+  VTUPDATE                 BigInt?
+
+  CLIENTS          CLIENTS            @relation(fields: [CLIENT_ID], references: [CLIENT_ID])
+  VTSTATUS         VTSTATUS           @relation(fields: [STATUS_ID], references: [ID])
+  USER_RESPONSAVEL DASHUSERS          @relation(name: "USER_RESPONSAVEL", fields: [RESPONSAVEL], references: [EMAIL])
+  USER_TECNICO     DASHUSERS          @relation(name: "USER_TECNICO", fields: [TECNICO_ID], references: [EMAIL])
+  CLUNITS          CLUNITS            @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  VTDRTS           VTDRTS[]
+  VTENERGIES       VTENERGIES[]
+  VTENVIRONMENTS   VTENVIRONMENTS[]
+  VTMACHINES       VTMACHINES[]
+  VTWATERMEASURERS VTWATERMEASURERS[]
+}
+
+model VTACCESSPOINTIMAGES {
+  ID             Int    @id @default(autoincrement())
+  ACCESSPOINT_ID String @db.VarChar(36)
+  CONTEXT        String @db.VarChar(100)
+  URIS           String @db.Text
+
+  VTACCESSPOINTS VTACCESSPOINTS @relation(fields: [ACCESSPOINT_ID], references: [ID])
+}
+
+model VTACCESSPOINTS {
+  ID             String  @id @db.VarChar(36)
+  COMMENTS       String? @db.VarChar(30)
+  DISTANCETOAP   String? @db.VarChar(30)
+  DRT_ID         String  @db.VarChar(36)
+  ENVIRONMENT_ID String? @db.VarChar(36)
+  TYPE           String? @db.VarChar(30)
+
+  VTDRTS                     VTDRTS                       @relation(fields: [DRT_ID], references: [ID])
+  VTENVIRONMENTS             VTENVIRONMENTS?              @relation(fields: [ENVIRONMENT_ID], references: [ID])
+  VTACCESSPOINTIMAGES        VTACCESSPOINTIMAGES[]
+  VTSERVEDENVIRONMENTMACHINE VTSERVEDENVIRONMENTMACHINE[]
+}
+
+model VTCHARACTERISTICTYPE {
+  ID             Int    @id @default(autoincrement())
+  CHARACTERISTIC String @db.VarChar(50)
+}
+
+model VTDRTIMAGES {
+  ID      Int    @id @default(autoincrement())
+  CONTEXT String @db.VarChar(100)
+  DRT_ID  String @db.VarChar(36)
+  URIS    String @db.Text
+
+  VTDRTS VTDRTS @relation(fields: [DRT_ID], references: [ID])
+}
+
+model VTDRTS {
+  ID             String  @id @db.VarChar(36)
+  ENVIRONMENT_ID String? @db.VarChar(36)
+  VT_ID          Int
+
+  VTENVIRONMENTS VTENVIRONMENTS?  @relation(fields: [ENVIRONMENT_ID], references: [ID])
+  VISITATECNICA  VISITATECNICA    @relation(fields: [VT_ID], references: [ID])
+  VTACCESSPOINTS VTACCESSPOINTS[]
+  VTDRTIMAGES    VTDRTIMAGES[]
+  VTRACKS        VTRACKS[]
+}
+
+model VTENERGIES {
+  ID    Int @id @default(autoincrement())
+  VT_ID Int
+
+  VISITATECNICA  VISITATECNICA    @relation(fields: [VT_ID], references: [ID])
+  VTENERGYIMAGES VTENERGYIMAGES[]
+}
+
+model VTENERGYIMAGES {
+  ID        Int    @id @default(autoincrement())
+  CONTEXT   String @db.VarChar(100)
+  ENERGY_ID Int
+  URIS      String @db.Text
+
+  VTENERGIES VTENERGIES @relation(fields: [ENERGY_ID], references: [ID])
+}
+
+model VTENVIMAGES {
+  ID      Int    @id @default(autoincrement())
+  CONTEXT String @db.VarChar(100)
+  ENV_ID  String @db.VarChar(36)
+  URIS    String @db.Text
+
+  VTENVIRONMENTS VTENVIRONMENTS @relation(fields: [ENV_ID], references: [ID])
+}
+
+model VTENVIRONMENTS {
+  ID                               String @id @db.VarChar(36)
+  AREA_IN_SQUARE_METERS            String @db.VarChar(10)
+  CONTROLLERTIME                   String @db.VarChar(10)
+  ENVTYPE_ID                       Int
+  EVAPORATORS_COUNT                Int
+  LOCATION                         String @db.VarChar(100)
+  MAXTEMPERATURE                   String @db.VarChar(5)
+  MINTEMPERATURE                   String @db.VarChar(5)
+  NAME                             String @db.VarChar(100)
+  SHOULD_EVAPORATORS_WORK_FULLTIME Int    @db.TinyInt
+  TAG                              String @db.VarChar(100)
+  TYPE                             String @db.VarChar(100)
+  VT_ID                            Int
+
+  VTENVTYPES            VTENVTYPES              @relation(fields: [ENVTYPE_ID], references: [ID])
+  VISITATECNICA         VISITATECNICA           @relation(fields: [VT_ID], references: [ID])
+  VTACCESSPOINTS        VTACCESSPOINTS[]
+  VTDRTS                VTDRTS[]
+  VTENVIMAGES           VTENVIMAGES[]
+  VTMACHINEENVS         VTMACHINEENVS[]
+  VTMACHINEENVSLOCATION VTMACHINEENVSLOCATION[]
+  VTRACKS               VTRACKS[]
+}
+
+model VTENVTYPES {
+  ID             Int              @id @default(autoincrement())
+  NAME           String           @db.VarChar(100)
+  VTENVIRONMENTS VTENVIRONMENTS[]
+}
+
+model VTMACHINEENVS {
+  ID             Int            @id @default(autoincrement())
+  ID_ENV         String         @db.VarChar(36)
+  ID_MACHINE     String         @db.VarChar(36)
+  VTENVIRONMENTS VTENVIRONMENTS @relation(fields: [ID_ENV], references: [ID])
+  VTMACHINES     VTMACHINES     @relation(fields: [ID_MACHINE], references: [ID])
+
+  @@unique([ID_MACHINE, ID_ENV])
+}
+
+model VTMACHINEENVSLOCATION {
+  ID             Int            @id @default(autoincrement())
+  ID_ENV         String         @db.VarChar(36)
+  ID_MACHINE     String         @db.VarChar(36)
+  VTENVIRONMENTS VTENVIRONMENTS @relation(fields: [ID_ENV], references: [ID])
+  VTMACHINES     VTMACHINES     @relation(fields: [ID_MACHINE], references: [ID])
+
+  @@unique([ID_MACHINE, ID_ENV])
+}
+
+model VTMACHINEIMAGES {
+  ID         Int    @id @default(autoincrement())
+  CONTEXT    String @db.VarChar(100)
+  MACHINE_ID String @db.VarChar(36)
+  URIS       String @db.Text
+
+  VTMACHINES VTMACHINES @relation(fields: [MACHINE_ID], references: [ID])
+}
+
+model VTMACHINEMACHINES {
+  ID                   Int        @id @default(autoincrement())
+  ID_ASSOCIETED        String     @db.VarChar(36)
+  ID_MACHINE           String     @db.VarChar(36)
+  VTMACHINE_ASSOCIETED VTMACHINES @relation(name: "VTMACHINE_ASSOCIETED", fields: [ID_ASSOCIETED], references: [ID])
+  VTMACHINE_MACHINE    VTMACHINES @relation(name: "VTMACHINE_MACHINE", fields: [ID_MACHINE], references: [ID])
+
+  @@unique([ID_MACHINE, ID_ASSOCIETED])
+}
+
+model VTMACHINES {
+  ID             String @id @db.VarChar(36)
+  BRAND          String @db.VarChar(100)
+  CYCLES         Int
+  FLUID          String @db.VarChar(100)
+  FRIGO_CAPACITY String @db.VarChar(11)
+  MODEL          String @db.VarChar(100)
+  RATED_POWER    String @db.VarChar(11)
+  TAG            String @db.VarChar(100)
+  TENSION        String @db.VarChar(11)
+  TYPE           String @db.VarChar(100)
+  TYPE_ID        Int
+  UNIT_ID        Int
+  VALVE          String @db.VarChar(100)
+  VT_ID          Int
+
+  VTMACHINETYPES        VTMACHINETYPES          @relation(fields: [TYPE_ID], references: [ID])
+  VTMACHINEUNITS        VTMACHINEUNITS          @relation(fields: [UNIT_ID], references: [ID])
+  VISITATECNICA         VISITATECNICA           @relation(fields: [VT_ID], references: [ID])
+  VTMACHINEENVS         VTMACHINEENVS[]
+  VTMACHINEENVSLOCATION VTMACHINEENVSLOCATION[]
+  VTMACHINEIMAGES       VTMACHINEIMAGES[]
+  VTMACHINE_ASSOCIETED  VTMACHINEMACHINES[]     @relation("VTMACHINE_ASSOCIETED")
+  VTMACHINE_MACHINE     VTMACHINEMACHINES[]     @relation("VTMACHINE_MACHINE")
+}
+
+model VTMACHINETYPES {
+  ID         Int          @id @default(autoincrement())
+  NAME       String       @db.VarChar(100)
+  VTMACHINES VTMACHINES[]
+}
+
+model VTMACHINEUNITS {
+  ID         Int          @id @default(autoincrement())
+  NAME       String       @db.VarChar(100)
+  VTMACHINES VTMACHINES[]
+}
+
+model VTRACKIMAGES {
+  ID      Int    @id @default(autoincrement())
+  CONTEXT String @db.VarChar(100)
+  RACK_ID String @db.VarChar(36)
+  URIS    String @db.Text
+
+  VTRACKS VTRACKS @relation(fields: [RACK_ID], references: [ID])
+}
+
+model VTRACKS {
+  ID             String  @id @db.VarChar(36)
+  COMMENTS       String? @db.VarChar(30)
+  DISTANCETOAP   String? @db.VarChar(30)
+  DRT_ID         String  @db.VarChar(36)
+  ENVIRONMENT_ID String? @db.VarChar(36)
+
+  VTDRTS         VTDRTS          @relation(fields: [DRT_ID], references: [ID])
+  VTENVIRONMENTS VTENVIRONMENTS? @relation(fields: [ENVIRONMENT_ID], references: [ID])
+  VTRACKIMAGES   VTRACKIMAGES[]
+}
+
+model VTSERVEDENVIRONMENTMACHINE {
+  ID             String  @id @db.VarChar(36)
+  ACCESSPOINT_ID String  @db.VarChar(36)
+  COMMENTS       String? @db.VarChar(30)
+  DISTANCETOAP   String? @db.VarChar(30)
+  SIGNALQUALITY  String? @db.VarChar(30)
+  TAG            String? @db.VarChar(30)
+  TYPE           String? @db.VarChar(30)
+
+  VTACCESSPOINTS VTACCESSPOINTS @relation(fields: [ACCESSPOINT_ID], references: [ID])
+}
+
+model VTSTATUS {
+  ID            Int             @id @default(autoincrement())
+  STATUS        String          @db.VarChar(50)
+  VISITATECNICA VISITATECNICA[]
+}
+
+model VTWATERMEASURERIMAGES {
+  ID                Int    @id @default(autoincrement())
+  CONTEXT           String @db.VarChar(100)
+  URIS              String @db.Text
+  WATERMEASURERS_ID String @db.VarChar(36)
+
+  VTWATERMEASURERS VTWATERMEASURERS @relation(fields: [WATERMEASURERS_ID], references: [ID])
+}
+
+model VTWATERMEASURERS {
+  ID                               String  @id @db.VarChar(36)
+  BRAND                            String? @db.VarChar(30)
+  FLOORLOCALIZATION                String? @db.VarChar(30)
+  INSTALLOTHERMETERWITHOUTBUILDING String? @db.Char(1)
+  LOCALIZATION                     String? @db.VarChar(30)
+  MODEL                            String? @db.VarChar(30)
+  PIPEDIAMETER                     String? @db.VarChar(30)
+  SITUATION                        String? @db.VarChar(30)
+  TRANSMISSIONGIVENSUCCESSFULY     String? @db.VarChar(30)
+  VT_ID                            Int
+
+  VISITATECNICA         VISITATECNICA           @relation(fields: [VT_ID], references: [ID])
+  VTWATERMEASURERIMAGES VTWATERMEASURERIMAGES[]
+}
+
+model WATERS {
+  ID                         Int                          @id @default(autoincrement()) @db.UnsignedMediumInt
+  HYDROMETER_MODELS_ID       Int?                         @db.UnsignedMediumInt
+  QUANTITY_OF_RESERVOIRS     Int?                         @db.UnsignedInt
+  TOTAL_CAPACITY             Int?                         @db.UnsignedInt
+  UNIT_ID                    Int?                         @db.UnsignedMediumInt
+  HYDROMETER_MODELS          HYDROMETER_MODELS?           @relation(fields: [HYDROMETER_MODELS_ID], references: [ID])
+  CLUNITS                    CLUNITS?                     @relation(fields: [UNIT_ID], references: [UNIT_ID])
+  DMAS_DEVICES               DMAS_DEVICES[]
+  LAAGER                     LAAGER[]
+  WATERS_MONTH_HISTORY_USAGE WATERS_MONTH_HISTORY_USAGE[]
+
+  @@unique([UNIT_ID])
+}
+
+model WATERS_MONTH_HISTORY_USAGE {
+  ID              Int      @id @default(autoincrement())
+  ESTIMATED_USAGE Int?     @default(0) @db.TinyInt
+  HISTORY_MONTH   Int      @db.MediumInt
+  HISTORY_YEAR    Int      @db.MediumInt
+  LAST_USAGE      Decimal? @db.Decimal(15, 4)
+  MONTH_USAGE     Decimal? @db.Decimal(15, 4)
+  RECORD_DATE     String   @db.VarChar(10)
+  WATER_ID        Int      @db.UnsignedMediumInt
+  WATERS          WATERS   @relation(fields: [WATER_ID], references: [ID])
+
+  @@unique([HISTORY_MONTH, HISTORY_YEAR, WATER_ID])
+}
+
+model WHITE_RATE_PARAMETERS {
+  WHITERATE_ID         Int           @id @default(autoincrement()) @db.UnsignedMediumInt
+  END_FIRST_MID_RATE   String        @db.VarChar(10)
+  END_LAST_MID_RATE    String        @db.VarChar(10)
+  END_PONTA            String        @db.VarChar(10)
+  FIRST_MID_RATE       String        @db.VarChar(30)
+  LAST_MID_RATE        String        @db.VarChar(30)
+  RATE_OUTPONTA        String        @db.VarChar(30)
+  RATE_PONTA           String        @db.VarChar(30)
+  START_FIRST_MID_RATE String        @db.VarChar(10)
+  START_LAST_MID_RATE  String        @db.VarChar(10)
+  START_PONTA          String        @db.VarChar(10)
+  RATE_CICLES          RATE_CICLES[]
+}
+
+model cache_cond_tel {
+  YMD                  String   @db.VarChar(15)
+  devId                String   @db.VarChar(50)
+  timezoneOffset       Int      @default(-3)
+  TEMPERATURE_OFFSET   Decimal? @db.Decimal(4, 1)
+  chartsBas            String?  @db.MediumText
+  chartsDet            String?  @db.MediumText
+  chartsExt            String?  @db.MediumText
+  cstats               String?  @db.MediumText
+  dacHOn               Decimal? @db.Decimal(6, 4)
+  devOnline            Decimal? @db.Decimal(6, 4)
+  meantp               String?  @db.MediumText
+  vers                 String   @db.VarChar(10)
+  last_calculated_date String   @db.VarChar(15)
+
+  @@id([devId, YMD, timezoneOffset, last_calculated_date])
+}
+
+model cache_gameter_cons {
+  YMD      String   @db.VarChar(15)
+  meterId  Int      @db.UnsignedMediumInt
+  conswh   Int?
+  datCache String?  @db.VarChar(50)
+  invoice  Decimal? @db.Decimal(8, 2)
+
+  @@id([meterId, YMD])
+}
+
+model cache_unit_autom_savings {
+  YMD      String   @db.VarChar(15)
+  unitId   Int      @db.UnsignedMediumInt
+  datCache String?  @db.VarChar(50)
+  totalEst Decimal? @db.Decimal(6, 2)
+
+  @@id([unitId, YMD])
+}

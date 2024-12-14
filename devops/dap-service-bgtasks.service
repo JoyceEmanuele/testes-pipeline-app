@@ -1,0 +1,13 @@
+[Unit]
+Description=DAP Background Tasks service
+
+[Service]
+Type=simple
+User=diel
+WorkingDirectory=/home/diel/API-Server
+ExecStart=/usr/bin/node /home/diel/API-Server/dist/serviceBGTasks/main.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

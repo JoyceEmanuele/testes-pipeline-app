@@ -1,0 +1,60 @@
+import * as sqldb from '../connectSql'
+import { saveOperationLog, OperationLogData } from '../dbModifLog'
+import { dbLogger } from '../../../srcCommon/helpers/logger'
+
+/* @IFHELPER:FUNC getCommandsList = SELECT
+
+  FROM CG_EM210_COMMANDS
+
+  SELECT CG_EM210_COMMANDS.COMMAND,
+  SELECT CG_EM210_COMMANDS.SYS_ID,
+  SELECT CG_EM210_COMMANDS.ADDRESS,
+  SELECT CG_EM210_COMMANDS.DESCRIPTION,
+  SELECT CG_EM210_COMMANDS.IP,
+  SELECT CG_EM210_COMMANDS.ID,
+  SELECT CG_EM210_COMMANDS.SIZE,
+  SELECT CG_EM210_COMMANDS.FUNC_ID,
+  SELECT CG_EM210_COMMANDS.R_W,
+  SELECT CG_EM210_COMMANDS.UNIT,
+  SELECT CG_EM210_COMMANDS.FORMULA
+  SELECT CG_EM210_COMMANDS.ALIAS
+*/
+export function getCommandsList (qPars: {
+}) {
+  let sentence = `
+    SELECT
+    CG_EM210_COMMANDS.COMMAND,
+    CG_EM210_COMMANDS.SYS_ID,
+    CG_EM210_COMMANDS.ADDRESS,
+    CG_EM210_COMMANDS.DESCRIPTION,
+    CG_EM210_COMMANDS.IP,
+    CG_EM210_COMMANDS.ID,
+    CG_EM210_COMMANDS.SIZE,
+    CG_EM210_COMMANDS.FUNC_ID,
+    CG_EM210_COMMANDS.R_W,
+    CG_EM210_COMMANDS.UNIT,
+    CG_EM210_COMMANDS.FORMULA,
+    CG_EM210_COMMANDS.ALIAS
+  `
+
+  sentence += `
+    FROM
+      CG_EM210_COMMANDS
+    ORDER BY CAST(SUBSTRING(COMMAND, 4, 3) AS UNSIGNED)
+  `
+
+  return sqldb.query<{
+    COMMAND: string
+    SYS_ID: number
+    ADDRESS: number
+    DESCRIPTION: string
+    IP: string
+    ID: number
+    SIZE: number
+    FUNC_ID: number
+    R_W: string
+    UNIT: string
+    FORMULA: string
+    ALIAS: string
+  }>(sentence, qPars)
+}

@@ -1,0 +1,15 @@
+FROM mariadb:10.6.12
+
+ARG ROOT_PASSWORD
+ENV MARIADB_ROOT_PASSWORD=${ROOT_PASSWORD}
+
+COPY *.sql /docker-entrypoint-initdb.d/
+RUN echo "GRANT ALL PRIVILEGES ON *.* to 'develbackend'@'%' Identified By 'develbackend';" > /docker-entrypoint-initdb.d/zgrant_dev.sql
+
+VOLUME [/var/lib/mysql]
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+EXPOSE 3306
+
+CMD ["mariadbd"]

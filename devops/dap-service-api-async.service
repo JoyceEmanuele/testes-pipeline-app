@@ -1,0 +1,13 @@
+[Unit]
+Description=DAP API-async server
+
+[Service]
+Type=simple
+User=diel
+WorkingDirectory=/home/diel/API-Server
+ExecStart=/usr/bin/node /home/diel/API-Server/dist/serviceApiAsync/main.js --port-internal=50301 --port-external=50401 --port-haproxy-agent=50501
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,82 @@
+import * as sqldb from '../connectSql'
+
+/* @IFHELPER:FUNC getModelsList = SELECT
+
+  FROM CHILLER_CARRIER_MODELS
+
+  SELECT CHILLER_CARRIER_MODELS.ID,
+  SELECT CHILLER_CARRIER_MODELS.MODEL_NAME,
+  SELECT CHILLER_CARRIER_MODELS.NOMINAL_CAPACITY,
+  SELECT CHILLER_CARRIER_MODELS.NOMINAL_VOLTAGE,
+  SELECT CHILLER_CARRIER_MODELS.NOMINAL_FREQUENCY,
+  SELECT CHILLER_CARRIER_LINES.LINE_NAME
+*/
+export function getModelsList (qPars: {
+}) {
+  let sentence = `
+    SELECT
+      CHILLER_CARRIER_MODELS.ID,
+      CHILLER_CARRIER_MODELS.MODEL_NAME,
+      CHILLER_CARRIER_MODELS.NOMINAL_CAPACITY,
+      CHILLER_CARRIER_MODELS.NOMINAL_VOLTAGE,
+      CHILLER_CARRIER_MODELS.NOMINAL_FREQUENCY,
+      CHILLER_CARRIER_LINES.LINE_NAME
+  `
+
+  sentence += `
+    FROM
+      CHILLER_CARRIER_MODELS
+    INNER JOIN CHILLER_CARRIER_LINES ON (CHILLER_CARRIER_LINES.ID = CHILLER_CARRIER_MODELS.CHILLER_CARRIER_LINE_ID)
+  `
+
+  return sqldb.query<{
+    ID: number
+    MODEL_NAME: string
+    NOMINAL_CAPACITY: number
+    NOMINAL_VOLTAGE: number
+    NOMINAL_FREQUENCY: number
+    LINE_NAME: string
+  }>(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC getChillerModelsComboOpts = SELECT LIST
+  FROM CHILLER_CARRIER_MODELS
+
+  SELECT CHILLER_CARRIER_MODELS.ID AS value
+  SELECT CHILLER_CARRIER_MODELS.MODEL_NAME AS label
+*/
+export function getChillerModelsComboOpts () {
+  let sentence = `
+    SELECT
+      CHILLER_CARRIER_MODELS.ID AS value,
+      CHILLER_CARRIER_MODELS.MODEL_NAME AS label
+  `
+  sentence += `
+    FROM
+      CHILLER_CARRIER_MODELS
+  `
+
+  return sqldb.query<{
+    value: string
+    label: string
+  }>(sentence)
+}
+
+export async function getModelById (qPars: { ID: number }) {
+  let sentence = `
+    SELECT
+      CHILLER_CARRIER_MODELS.MODEL_NAME,
+      CHILLER_CARRIER_MODELS.NOMINAL_CAPACITY,
+      CHILLER_CARRIER_MODELS.NOMINAL_VOLTAGE,
+      CHILLER_CARRIER_MODELS.NOMINAL_FREQUENCY
+    FROM
+      CHILLER_CARRIER_MODELS
+    WHERE CHILLER_CARRIER_MODELS.ID = :ID
+  `
+  return sqldb.querySingle<{
+    MODEL_NAME: string
+    NOMINAL_CAPACITY: number
+    NOMINAL_VOLTAGE: number
+    NOMINAL_FREQUENCY: number
+  }>(sentence, qPars)
+}

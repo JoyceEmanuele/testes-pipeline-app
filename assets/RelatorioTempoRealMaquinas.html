@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plataforma Celsius 360</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;500&display=swap');
+      @page {
+        margin: 0;
+      }
+      html, body {
+        margin: 0;
+        padding: 0;
+        width:  fit-content;
+        height: fit-content;
+        color: #181842;
+        background-color: #fff;
+        font-family: Inter, sans-serif;
+      }
+      
+      .header-space {
+        height: 145px;
+      }
+      .footer-space {
+        height: 120px;
+      }
+
+      header {
+        width: 100%;
+        background-color: #0F0F38;
+        position: fixed;
+        top: 0;
+      }
+      footer {
+        width: 100%;
+        background-color: #0F0F38;
+        position: fixed;
+        bottom: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header
+      style="
+          padding: 10px 30px;
+          background-color: #0f0f36;
+          width: 100%;
+          box-sizing: border-box;
+      "
+    >
+      <table
+        style="
+          border-collapse: collapse;
+          border: 0;
+          width: 100%;
+          height: 70px;
+        "
+        aria-describedby="Tabela de cabeçalho."
+      >
+        <th></th>
+        <tr>
+          <td style="width: 50%;">
+            <div
+              style="
+                margin-bottom: 4px;
+                color: #fff;
+                font-size: 20px;
+                font-weight: bold;
+                font-style: normal;
+                font-family: sans-serif;
+              "
+            >
+              #TITULO# - #TEMPOREAL#
+            </div>
+            <div
+              style="
+                color: #00ff9b;
+                font-size: 12px;
+                font-family: sans-serif;
+              "
+            >
+              $DATEINFO$
+            </div>
+          </td>
+          <td style="text-align: right;">
+            <img
+              src="https://dl-dielenergia-com.s3.sa-east-1.amazonaws.com/imgs/Diel_Logo_Color_Padrao.png"
+              alt="logotipo da Diel Energia"
+              width="114.3"
+              height="34"
+            />
+          </td>
+        </tr>
+      </table>
+    </header>
+
+    <table aria-describedby="Tabela de cabeçalho." style="width: 100%; table-layout: fixed; padding: 0px 30px;">
+      <th></th>
+      <thead><tr><td>
+        <div class="header-space">&nbsp;</div>
+      </td></tr></thead>
+      <tbody><tr><td>
+        <div style="position: fixed; width: 90%; top: 100px;">
+          <div style="display: flex; justify-content: space-between; font-size: 9px">
+            <div>
+              <h4 style="color: #202370;">#LOCALIZACAO#</h4>
+              <p>$LOCAL$</p>
+            </div>
+            <div>
+              <h4 style="color: #202370;">#UNIDADE#</h4>
+              <p>$UNIT_NAME$</p>
+            </div>
+            <div>
+              <h4 style="color: #202370;">#RESPONSAVEL#</h4>
+              <p>$RESPONSIBLE$</p>
+            </div>
+            <div>
+              <h4 style="color: #202370;">#N_DISPOSITIVO#</h4>
+              <p>$NUM_DISP$</p>
+            </div>
+          </div>
+        </div>
+        <!-- SISTEM -->
+        <!-- SISTEM -->
+        <div
+          class="containerArea"
+          style="
+            display: flex;
+            width: 100%;
+            gap: 16px;
+            flex-wrap: wrap;
+            row-gap: $NUMERO$;
+          "
+        >
+        <!-- SPLIT -->
+        <!-- SPLIT --> 
+      </div>
+    </td></tr></tbody>
+    <tfoot><tr><td>
+      <div class="footer-space">&nbsp;</div>
+    </td></tr></tfoot>
+  </table>
+    <footer
+      style="
+        display: flex;
+        color: #fff;
+        font-family: sans-serif;
+        padding: 20px 30px;
+        background-color: #0f0f36;
+        width: 100%;
+        align-items: end;
+        justify-content: space-between;
+        box-sizing: border-box;
+      "
+    >
+      <div>
+        <img
+          src="https://dl-dielenergia-com.s3.sa-east-1.amazonaws.com/imgs/localtag.png"
+          alt="Localização"
+          style="margin-top: 10px; width: 5.83px; height: 8.75px"
+        />
+        <span
+          style="
+            color: #fff;
+            font-family: sans-serif;
+            font-weight: bold;
+            margin-left: 5px;
+            font-size: 10px;
+          "
+        >
+          São Paulo
+        </span>
+        <br />
+        <p style="
+          color: #fff;
+          margin-top: 5px;
+          font-size: 10px;
+          margin-bottom: 0px;
+          "
+        >
+          Av. Dr. Cardoso de Melo, 1604
+          <br />
+          11° andar, Vila Olímpia, São Paulo - SP
+        </p>
+      </div>
+      <div></div>
+      <div style="display: flex; flex-direction: column; font-size: 10px">
+        <span style="margin-bottom: 2px;">(21) 35460747</span>
+        <span style="color:#00FF9B; text-decoration: underline;">suporte@dielenergia.com</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: end">
+        <img
+          src="https://dl-dielenergia-com.s3.sa-east-1.amazonaws.com/imgs/Diel_Logo_Color_Padrao.png"
+          alt="logotipo da Diel Energia"
+          width="57.15"
+          height="17.46"
+        />
+        <span style="font-size: 10px; margin-top: 2px;">www.dielenergia.com</span>
+      </div>
+    </footer>
+  </body>
+</html>

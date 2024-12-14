@@ -1,0 +1,21 @@
+# Usando uma imagem base do Node.js
+FROM node:18.17.1
+
+# Definindo o diretório de trabalho dentro do container
+WORKDIR /usr/src/app
+
+# Copiando os arquivos de dependências para o container
+COPY package*.json ./
+
+# Instalando as dependências
+RUN npm install
+
+# Copiando o restante dos arquivos da aplicação
+COPY . .
+
+RUN npm run build
+
+EXPOSE 46121
+
+# Comando para rodar o serviço
+CMD ["node", "dist/serviceAuth/main.js"]

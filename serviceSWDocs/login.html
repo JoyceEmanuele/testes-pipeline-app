@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diel Login</title>
+  <script>
+    async function submit() {
+      try {
+        const response = await fetch('/auth', {
+          method: 'POST', // *GET, POST, PUT, DELETE, etc.
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          redirect: 'follow', // manual, *follow, error
+          body: JSON.stringify({
+            userId: document.getElementById('user').value,
+            password: document.getElementById('password').value,
+          }),
+          headers: {
+            ['Content-Type']: 'application/json',
+          }
+        });
+        if ((response.status >= 200) && (response.status <= 299)) {
+          const searchParams = new URL(window.location).searchParams;
+          window.location.href = (searchParams && searchParams.get("to")) || '/';
+        } else {
+          alert("Houve erro");
+        }
+      } catch (err) {
+        console.log(err);
+        alert("Houve erro");
+      }
+    }
+  </script>
+</head>
+<body>
+  <input type="text" placeholder="Usuário" id="user"><br>
+  <input type="password" placeholder="Senha" id="password"><br>
+  <button onclick="submit()">Enviar</button>
+</body>
+</html>

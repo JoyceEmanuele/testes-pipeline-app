@@ -1,0 +1,655 @@
+import * as sqldb from '../connectSql'
+import { saveOperationLog, OperationLogData } from '../dbModifLog'
+import { dbLogger } from '../../helpers/logger'
+
+/* @IFHELPER:FUNC insert = INSERT
+  FROM NOBREAKS
+*/
+export async function w_insert (qPars: {
+  ASSET_ID?: number
+  INPUT_VOLTAGE?: number | null
+  OUTPUT_VOLTAGE?: number | null 
+  NOMINAL_POTENTIAL?: number | null
+  NOMINAL_BATTERY_LIFE?: number | null
+  INSTALLATION_DATE?: string | null
+  INPUT_ELECTRIC_CURRENT?: number | null
+  OUTPUT_ELECTRIC_CURRENT?: number | null
+  NOMINAL_BATTERY_CAPACITY?: number | null
+}, operationLogData: OperationLogData) {
+  const fields: string[] = []
+  if (qPars.ASSET_ID != null) { fields.push('ASSET_ID') }
+  if (qPars.INPUT_VOLTAGE != null) { fields.push('INPUT_VOLTAGE') }
+  if (qPars.OUTPUT_VOLTAGE != null) { fields.push('OUTPUT_VOLTAGE') }
+  if (qPars.NOMINAL_POTENTIAL != null) { fields.push('NOMINAL_POTENTIAL') }
+  if (qPars.NOMINAL_BATTERY_LIFE != null) { fields.push('NOMINAL_BATTERY_LIFE') }
+  if (qPars.INSTALLATION_DATE != null) { fields.push('INSTALLATION_DATE') }
+  if (qPars.INPUT_ELECTRIC_CURRENT != null) { fields.push('INPUT_ELECTRIC_CURRENT') }
+  if (qPars.OUTPUT_ELECTRIC_CURRENT != null) { fields.push('OUTPUT_ELECTRIC_CURRENT') }
+  if (qPars.NOMINAL_BATTERY_CAPACITY != null) { fields.push('NOMINAL_BATTERY_CAPACITY') }
+  if (!fields.length) throw Error('No fields to insert').HttpStatus(500).DebugInfo({ qPars })
+
+  const sentence = `INSERT INTO NOBREAKS (${fields.join(', ')}) VALUES (:${fields.join(', :')})`
+
+  if (operationLogData) {
+    await saveOperationLog('NOBREAKS', sentence, qPars, operationLogData);
+    dbLogger('NOBREAKS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC updateInfo = UPDATE
+  FROM NOBREAKS
+  PARAM ID: {NOBREAKS.ID}
+*/
+export async function w_updateInfo (
+  qPars: {
+    ID: number
+    ASSET_ID?: number
+    INPUT_VOLTAGE?: number | null
+    OUTPUT_VOLTAGE?: number | null
+    NOMINAL_POTENTIAL?: number | null
+    NOMINAL_BATTERY_LIFE?: number | null
+    INSTALLATION_DATE?: string | null
+    INPUT_ELECTRIC_CURRENT?: number | null
+    OUTPUT_ELECTRIC_CURRENT?: number | null
+    NOMINAL_BATTERY_CAPACITY?: number | null
+  }, operationLogData: OperationLogData
+) {
+  const fields: string[] = []
+  if (qPars.ASSET_ID !== undefined) { fields.push('ASSET_ID = :ASSET_ID') }
+  if (qPars.INPUT_VOLTAGE !== undefined) { fields.push('INPUT_VOLTAGE = :INPUT_VOLTAGE') }
+  if (qPars.OUTPUT_VOLTAGE !== undefined) { fields.push('OUTPUT_VOLTAGE = :OUTPUT_VOLTAGE') }
+  if (qPars.NOMINAL_POTENTIAL !== undefined) { fields.push('NOMINAL_POTENTIAL = :NOMINAL_POTENTIAL') }
+  if (qPars.NOMINAL_BATTERY_LIFE !== undefined) { fields.push('NOMINAL_BATTERY_LIFE = :NOMINAL_BATTERY_LIFE') }
+  if (qPars.INPUT_ELECTRIC_CURRENT !== undefined) { fields.push('INPUT_ELECTRIC_CURRENT = :INPUT_ELECTRIC_CURRENT') }
+  if (qPars.OUTPUT_ELECTRIC_CURRENT !== undefined) { fields.push('OUTPUT_ELECTRIC_CURRENT = :OUTPUT_ELECTRIC_CURRENT') }
+  if (qPars.NOMINAL_BATTERY_CAPACITY !== undefined) { fields.push('NOMINAL_BATTERY_CAPACITY = :NOMINAL_BATTERY_CAPACITY') }
+  if (qPars.INSTALLATION_DATE !== undefined) { fields.push('INSTALLATION_DATE = :INSTALLATION_DATE') }
+  if (!fields.length) throw Error('No fields to update').HttpStatus(500).DebugInfo({ qPars })
+
+  const sentence = `UPDATE NOBREAKS SET ${fields.join(', ')} WHERE ID = :ID`
+
+  if (operationLogData) {
+    await saveOperationLog('NOBREAKS', sentence, qPars, operationLogData);
+    dbLogger('NOBREAKS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC delete = DELETE
+  PARAM ID: {NOBREAKS.ID}
+  FROM NOBREAKS
+  WHERE {NOBREAKS.ID} = {:ID}
+*/
+export async function w_delete (qPars: { ID: number }, operationLogData: OperationLogData) {
+
+  const sentence = `DELETE FROM NOBREAKS WHERE NOBREAKS.ID = :ID`;
+
+  if (operationLogData) {
+    await saveOperationLog('NOBREAKS', sentence, qPars, operationLogData);
+    dbLogger('NOBREAKS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+export async function w_removeAssetsFromUnit(qPars: { UNIT_ID: number }, operationLogData: OperationLogData) {
+  const sentence = `
+      DELETE
+          NOBREAKS
+      FROM
+          NOBREAKS
+          INNER JOIN ASSETS ON (ASSETS.ID = NOBREAKS.ASSET_ID)
+          INNER JOIN CLUNITS ON (CLUNITS.UNIT_ID = ASSETS.UNIT_ID)
+      WHERE
+          CLUNITS.UNIT_ID = :UNIT_ID
+  `
+
+  if (operationLogData) {
+      await saveOperationLog('NOBREAKS', sentence, qPars, operationLogData);
+      dbLogger('NOBREAKS', sentence, qPars, operationLogData);
+  }
+
+  return sqldb.execute(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC getNobreak = SELECT DISTINCT
+  PARAM ID: {NOBREAKS.ID}
+  FROM NOBREAKS
+  INNER JOIN ASSETS ON (ASSETS.ID = NOBREAKS.ASSET_ID)
+  LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+  LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+    SELECT NOBREAKS.ID,
+    SELECT ASSETS.UNIT_ID,
+    SELECT ASSETS.DAT_CODE,
+    SELECT ASSETS.NAME,
+    SELECT ASSETS.MANUFACTURER,
+    SELECT ASSETS.MODEL,
+    SELECT ASSETS.INSTALLATION_DATE,
+    SELECT ASSETS.ID AS ASSET_ID,
+    SELECT NOBREAKS.INPUT_VOLTAGE,
+    SELECT NOBREAKS.OUTPUT_VOLTAGE,
+    SELECT NOBREAKS.NOMINAL_POTENTIAL,
+    SELECT NOBREAKS.NOMINAL_BATTERY_LIFE,
+    SELECT DMTS_NOBREAKS.DMT_ID,
+    SELECT DMTS_NOBREAKS.PORT,
+    SELECT DMTS.CODE AS DMT_CODE
+  WHERE {NOBREAKS.ID} = ({:ID})
+*/
+export function getNobreak (qPars: { ID: number }) {
+  let sentence = `
+    SELECT DISTINCT
+      NOBREAKS.ID,
+      ASSETS.UNIT_ID,
+      ASSETS.DAT_CODE,
+      ASSETS.NAME,
+      ASSETS.MANUFACTURER,
+      ASSETS.MODEL,
+      ASSETS.INSTALLATION_DATE,
+      ASSETS.ID AS ASSET_ID,
+      NOBREAKS.INPUT_VOLTAGE,
+      NOBREAKS.OUTPUT_VOLTAGE,
+      NOBREAKS.NOMINAL_POTENTIAL,
+      NOBREAKS.NOMINAL_BATTERY_LIFE,
+      DMTS_NOBREAKS.DMT_ID,
+      DMTS_NOBREAKS.PORT,
+      DEVICES.DEVICE_CODE AS DMT_CODE 
+  `
+  sentence += `
+    FROM
+      NOBREAKS
+      INNER JOIN ASSETS ON (ASSETS.ID = NOBREAKS.ASSET_ID)
+      LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+      LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+      LEFT JOIN DEVICES ON (DMTS.DEVICE_ID = DEVICES.ID)
+
+    WHERE
+      NOBREAKS.ID = :ID
+  `;
+
+  return sqldb.querySingle<{
+    ID: number
+    UNIT_ID: number
+    DAT_CODE: string
+    NAME: string
+    MANUFACTURER: string
+    MODEL: string
+    INPUT_VOLTAGE: number
+    OUTPUT_VOLTAGE: number
+    NOMINAL_POTENTIAL: number
+    NOMINAL_BATTERY_LIFE: number
+    INSTALLATION_DATE: string
+    ASSET_ID: number
+    DMT_ID: number
+    DMT_CODE: string
+    PORT: number
+  }>(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC getNobreakInfoList = SELECT LIST
+  FROM
+  NOBREAKS
+  INNER JOIN ASSETS ON (NOBREAKS.ASSET_ID = ASSETS.ID)
+  LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ASSETS.UNIT_ID)
+  LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+  LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+  LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+
+  SELECT  NOBREAKS.ID,
+  SELECT  ASSETS.UNIT_ID,
+  SELECT  ASSETS.DAT_CODE,
+  SELECT  ASSETS.NAME,
+  SELECT  ASSETS.MANUFACTURER,
+  SELECT  ASSETS.MODEL,
+  SELECT  ASSETS.INSTALLATION_DATE,
+  SELECT  NOBREAKS.INPUT_VOLTAGE,
+  SELECT  NOBREAKS.OUTPUT_VOLTAGE,
+  SELECT  NOBREAKS.NOMINAL_POTENTIAL,
+  SELECT  NOBREAKS.NOMINAL_BATTERY_LIFE,
+  SELECT  NOBREAKS.INPUT_ELECTRIC_CURRENT,
+  SELECT  NOBREAKS.OUTPUT_ELECTRIC_CURRENT,
+  SELECT  NOBREAKS.NOMINAL_BATTERY_CAPACITY,
+  SELECT  DMTS_NOBREAKS.PORT,
+  SELECT  CLUNITS.UNIT_NAME,
+  SELECT  DMTS.CODE AS DMT_CODE
+
+  WHERE {CLIENTS.CLIENT_ID} = ({:CLIENT_ID})
+*/
+export function getNobreakInfoList (qPars: {
+  clientIds?: number[],
+  unitIds?: number[], 
+  stateIds?: number[],
+  cityIds?: string[],
+  INCLUDE_INSTALLATION_UNIT?: boolean }) {
+  let sentence = `
+    SELECT DISTINCT
+      NOBREAKS.ID,
+      ASSETS.UNIT_ID,
+      ASSETS.DAT_CODE,
+      ASSETS.NAME,
+      ASSETS.MANUFACTURER,
+      ASSETS.MODEL,
+      ASSETS.INSTALLATION_DATE,
+      NOBREAKS.INPUT_VOLTAGE,
+      NOBREAKS.OUTPUT_VOLTAGE,
+      NOBREAKS.NOMINAL_POTENTIAL,
+      NOBREAKS.NOMINAL_BATTERY_LIFE,
+      NOBREAKS.INPUT_ELECTRIC_CURRENT,
+      NOBREAKS.OUTPUT_ELECTRIC_CURRENT,
+      NOBREAKS.NOMINAL_BATTERY_CAPACITY,
+      DMTS_NOBREAKS.PORT,
+      DMTS.ID AS DMT_ID,
+      CLUNITS.UNIT_NAME,
+      DEVICES.DEVICE_CODE AS DMT_CODE,
+      CITY.NAME AS CITY_NAME,
+      CITY.CITY_ID,
+      STATEREGION.ID AS STATE_ID,
+      STATEREGION.NAME AS STATE_UF,
+      CLIENTS.NAME AS CLIENT_NAME,
+      CLIENTS.CLIENT_ID
+  `
+  sentence += `
+    FROM
+      NOBREAKS
+      INNER JOIN ASSETS ON (NOBREAKS.ASSET_ID = ASSETS.ID)
+      LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ASSETS.UNIT_ID)
+      LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+      LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+      LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+      LEFT JOIN DEVICES ON (DMTS.DEVICE_ID = DEVICES.ID)
+      LEFT JOIN DEVICES_UNITS ON (DEVICES_UNITS.DEVICE_ID = DEVICES.ID)
+      LEFT JOIN CITY ON (CLUNITS.CITY_ID = CITY.CITY_ID)
+      LEFT JOIN STATEREGION ON (CITY.STATE_ID = STATEREGION.ID)
+  `
+
+  const conditions: string[] = []
+
+  if (qPars.clientIds) { conditions.push(`CLIENTS.CLIENT_ID IN (:clientIds)`) }
+  if (qPars.INCLUDE_INSTALLATION_UNIT === false) { conditions.push(`CLUNITS.PRODUCTION = 1`)}
+  if (qPars.unitIds) { conditions.push(`DEVICES_UNITS.UNIT_ID IN (:unitIds)`) }
+  if (qPars.cityIds) { conditions.push(`CITY.CITY_ID IN (:cityIds)`) }
+  if (qPars.stateIds) { conditions.push(`CITY.STATE_ID IN (:stateIds)`) }
+ 
+  if (conditions.length) { sentence += ' WHERE ' + conditions.join(' AND ') }
+
+  return sqldb.query<{
+    ID: number
+    UNIT_ID: number
+    DMT_CODE: string
+    DAT_CODE: string
+    DMT_ID: number
+    NAME: string
+    STATE_ID: number
+    CITY_ID: string
+    MANUFACTURER: string
+    MODEL: string
+    INPUT_VOLTAGE: number
+    OUTPUT_VOLTAGE: number
+    NOMINAL_POTENTIAL: number
+    NOMINAL_BATTERY_LIFE: number
+    INPUT_ELECTRIC_CURRENT: number
+    OUTPUT_ELECTRIC_CURRENT: number
+    NOMINAL_BATTERY_CAPACITY: number
+    INSTALLATION_DATE: string
+    PORT: number
+    UNIT_NAME: string
+    CLIENT_NAME: string
+    CITY_NAME: string
+    STATE_UF: string
+    CLIENT_ID: number
+  }>(sentence, qPars)
+}
+
+export function getEletricPortDmt (qPars: {DMT_CODE: string}) {
+  let sentence = `
+    SELECT
+       Port as PORT
+  `
+  sentence += `
+    FROM
+      DMTS_NOBREAK_CIRCUITS
+      LEFT JOIN DMTS ON (DMTS_NOBREAK_CIRCUITS.DMT_ID = DMTS.ID)
+      LEFT JOIN DEVICES ON (DEVICES.ID = DMTS.DEVICE_ID)
+  `
+
+    sentence += `
+    WHERE DEVICES.DEVICE_CODE = :DMT_CODE 
+`
+
+  return sqldb.querySingle<{
+    PORT: number
+  }>(sentence, qPars)
+}
+
+export function getNobreakPorts (qPars: {DMT_CODE: string}) {
+  let sentence = `
+    SELECT
+      DMTS_NOBREAKS.PORT,
+      DMTS_NOBREAKS.NOBREAK_ID
+  `
+  sentence += `
+    FROM 
+      DMTS_NOBREAKS
+      LEFT JOIN DMTS ON (DMTS.ID  = DMTS_NOBREAKS.DMT_ID)
+      LEFT JOIN DEVICES ON (DMTS.DEVICE_ID = DEVICES.ID)
+    `
+
+    sentence += `
+    WHERE DEVICES.DEVICE_CODE = :DMT_CODE 
+`
+
+  return sqldb.query<{
+    PORT: number
+    NOBREAK_ID: number
+  }>(sentence, qPars)
+}
+
+export function getNobreakInfoListByUnit (qPars: { UNIT_IDs: number[] }) {
+  let sentence = `
+    SELECT DISTINCT
+      NOBREAKS.ID,
+      ASSETS.UNIT_ID,
+      ASSETS.DAT_CODE,
+      ASSETS.NAME,
+      ASSETS.MANUFACTURER,
+      ASSETS.MODEL,
+      ASSETS.INSTALLATION_DATE,
+      NOBREAKS.INPUT_VOLTAGE,
+      NOBREAKS.OUTPUT_VOLTAGE,
+      NOBREAKS.NOMINAL_POTENTIAL,
+      NOBREAKS.NOMINAL_BATTERY_LIFE,
+      DMTS_NOBREAKS.PORT,
+      CLUNITS.UNIT_NAME,
+      DMTS_NOBREAK_CIRCUITS.PORT AS PORT_ELETRIC,
+      DEVICES.DEVICE_CODE AS DMT_CODE 
+  `
+  sentence += `
+    FROM
+      NOBREAKS
+      INNER JOIN ASSETS ON (NOBREAKS.ASSET_ID = ASSETS.ID)
+      LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ASSETS.UNIT_ID)
+      LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+      LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+      LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+      LEFT JOIN DEVICES ON (DMTS.DEVICE_ID = DEVICES.ID)
+      LEFT JOIN DMTS_NOBREAK_CIRCUITS ON (DMTS_NOBREAK_CIRCUITS.DMT_ID = DMTS.ID)
+  `
+
+  sentence += `
+    WHERE CLUNITS.UNIT_ID IN (:UNIT_IDs);
+`
+
+  return sqldb.query<{
+    ID: number
+    UNIT_ID: number
+    DMT_CODE: string
+    DAT_CODE: string
+    NAME: string
+    MANUFACTURER: string
+    MODEL: string
+    INPUT_VOLTAGE: number
+    OUTPUT_VOLTAGE: number
+    NOMINAL_POTENTIAL: number
+    NOMINAL_BATTERY_LIFE: number
+    INSTALLATION_DATE: string
+    PORT: number
+    PORT_ELETRIC: number
+    UNIT_NAME: string
+  }>(sentence, qPars)
+}
+
+
+
+/* @IFHELPER:FUNC getNobreakFullInfo = SELECT DISTINCT
+  PARAM ID: {NOBREAKS.ID}
+
+  FROM 
+    NOBREAKS
+  LEFT JOIN ASSETS ON (ASSETS.ID = NOBREAKS.ASSET_ID)
+  LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+  LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+  LEFT JOIN DEVICES ON (DMTS.DEVICE_ID = DEVICES.ID)
+  LEFT JOIN CLUNITS ON (ASSETS.UNIT_ID = CLUNITS.UNIT_ID)
+  LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+  LEFT JOIN CITY ON (CITY.CITY_ID = CLUNITS.CITY_ID)
+  LEFT JOIN STATEREGION ON (STATEREGION.ID = CITY.STATE_ID)
+
+    SELECT NOBREAKS.ID AS NOBREAK_ID,
+    SELECT NOBREAKS.INPUT_VOLTAGE,
+    SELECT NOBREAKS.OUTPUT_VOLTAGE,
+    SELECT NOBREAKS.NOMINAL_POTENTIAL,
+    SELECT NOBREAKS.NOMINAL_BATTERY_LIFE,
+    SELECT NOBREAKS.INPUT_ELECTRIC_CURRENT,
+    SELECT NOBREAKS.OUTPUT_ELECTRIC_CURRENT,
+    SELECT NOBREAKS.NOMINAL_BATTERY_CAPACITY,
+    SELECT ASSETS.NAME,
+    SELECT ASSETS.DAT_CODE,
+    SELECT ASSETS.MANUFACTURER,
+    SELECT ASSETS.MODEL,
+    SELECT ASSETS.INSTALLATION_DATE,
+    SELECT DMTS_NOBREAKS.DMT_ID,
+    SELECT DMTS_NOBREAKS.PORT,
+    SELECT DEVICES.DEVICE_CODE AS DMT_CODE,
+    SELECT CLUNITS.UNIT_ID,
+    SELECT CLUNITS.UNIT_NAME,
+    SELECT CLIENTS.CLIENT_ID,
+    SELECT CLIENTS.NAME AS CLIENT_NAME
+
+  WHERE {NOBREAKS.ID} = ({:ID})
+*/
+export function getNobreakFullInfo (qPars: { ID: number }) {
+  let sentence = `
+    SELECT DISTINCT
+      NOBREAKS.ID AS NOBREAK_ID,
+      NOBREAKS.INPUT_VOLTAGE,
+      NOBREAKS.OUTPUT_VOLTAGE,
+      NOBREAKS.NOMINAL_POTENTIAL,
+      NOBREAKS.NOMINAL_BATTERY_LIFE,
+      NOBREAKS.INPUT_ELECTRIC_CURRENT,
+      NOBREAKS.OUTPUT_ELECTRIC_CURRENT,
+      NOBREAKS.NOMINAL_BATTERY_CAPACITY,
+      ASSETS.NAME,
+      ASSETS.DAT_CODE,
+      ASSETS.MANUFACTURER,
+      ASSETS.MODEL,
+      ASSETS.INSTALLATION_DATE,
+      DMTS_NOBREAKS.DMT_ID,
+      DMTS_NOBREAKS.PORT,
+      DEVICES.DEVICE_CODE AS DMT_CODE,
+      CLUNITS.UNIT_ID,
+      CLUNITS.UNIT_NAME,
+      CLIENTS.CLIENT_ID,
+      CLIENTS.NAME AS CLIENT_NAME
+  `
+  sentence += `
+    FROM
+      NOBREAKS
+      LEFT JOIN ASSETS ON (ASSETS.ID = NOBREAKS.ASSET_ID)
+      LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+      LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+      LEFT JOIN DEVICES ON (DMTS.DEVICE_ID = DEVICES.ID)
+      LEFT JOIN CLUNITS ON (ASSETS.UNIT_ID = CLUNITS.UNIT_ID)
+      LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+      LEFT JOIN CITY ON (CITY.CITY_ID = CLUNITS.CITY_ID)
+      LEFT JOIN STATEREGION ON (STATEREGION.ID = CITY.STATE_ID)
+  
+    WHERE
+      NOBREAKS.ID = :ID
+  `;
+
+  return sqldb.querySingle<{
+    NOBREAK_ID: number
+    NAME: string
+    MANUFACTURER: string
+    MODEL: string
+    INPUT_VOLTAGE: number
+    OUTPUT_VOLTAGE: number
+    NOMINAL_POTENTIAL: number
+    NOMINAL_BATTERY_LIFE: number
+    INPUT_ELECTRIC_CURRENT: number
+    OUTPUT_ELECTRIC_CURRENT: number
+    NOMINAL_BATTERY_CAPACITY: number
+    INSTALLATION_DATE: string
+    DAT_CODE: string
+    DMT_ID: number
+    DMT_CODE: string
+    PORT: number
+    UNIT_ID: number
+    UNIT_NAME: string
+    CLIENT_ID: number
+    CLIENT_NAME: string
+  }>(sentence, qPars)
+}
+
+/* @IFHELPER:FUNC getNobreakInfoListByUnitId = SELECT LIST
+  FROM
+  NOBREAKS
+  INNER JOIN ASSETS ON (NOBREAKS.ASSET_ID = ASSETS.ID)
+  LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ASSETS.UNIT_ID)
+  LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+  LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+  LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+
+  SELECT  NOBREAKS.ID,
+  SELECT  ASSETS.UNIT_ID,
+  SELECT  ASSETS.DAT_CODE,
+  SELECT  ASSETS.NAME,
+  SELECT  ASSETS.MANUFACTURER,
+  SELECT  ASSETS.MODEL,
+  SELECT  ASSETS.INSTALLATION_DATE,
+  SELECT  NOBREAKS.INPUT_VOLTAGE,
+  SELECT  NOBREAKS.OUTPUT_VOLTAGE,
+  SELECT  NOBREAKS.NOMINAL_POTENTIAL,
+  SELECT  NOBREAKS.NOMINAL_BATTERY_LIFE,
+  SELECT  NOBREAKS.INPUT_ELECTRIC_CURRENT,
+  SELECT  NOBREAKS.OUTPUT_ELECTRIC_CURRENT,
+  SELECT  NOBREAKS.NOMINAL_BATTERY_CAPACITY,
+  SELECT  DMTS_NOBREAKS.PORT,
+  SELECT  CLUNITS.UNIT_NAME,
+  SELECT  DMTS.CODE AS DMT_CODE
+
+  WHERE {CLUNITS.UNIT_ID} = ({:UNIT_ID})
+*/
+export function getNobreakInfoListByUnitId (qPars: { UNIT_ID: number[] }) {
+  let sentence = `
+    SELECT DISTINCT
+      NOBREAKS.ID,
+      ASSETS.UNIT_ID,
+      ASSETS.DAT_CODE,
+      ASSETS.NAME,
+      ASSETS.MANUFACTURER,
+      ASSETS.MODEL,
+      ASSETS.INSTALLATION_DATE,
+      NOBREAKS.INPUT_VOLTAGE,
+      NOBREAKS.OUTPUT_VOLTAGE,
+      NOBREAKS.NOMINAL_POTENTIAL,
+      NOBREAKS.NOMINAL_BATTERY_LIFE,
+      NOBREAKS.INPUT_ELECTRIC_CURRENT,
+      NOBREAKS.OUTPUT_ELECTRIC_CURRENT,
+      NOBREAKS.NOMINAL_BATTERY_CAPACITY,     
+      DMTS_NOBREAKS.PORT,
+      CLUNITS.UNIT_NAME,
+      DEVICES.DEVICE_CODE AS DMT_CODE,
+      CITY.NAME AS CITY_NAME,
+      STATEREGION.NAME AS STATE_UF,
+      CLIENTS.NAME AS CLIENT_NAME
+  `
+  sentence += `
+   FROM
+      NOBREAKS
+      INNER JOIN ASSETS ON (NOBREAKS.ASSET_ID = ASSETS.ID)
+      LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ASSETS.UNIT_ID)
+      LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+      LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+      LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+      LEFT JOIN DEVICES ON (DMTS.DEVICE_ID = DEVICES.ID)
+      LEFT JOIN CITY ON (CLUNITS.CITY_ID = CITY.CITY_ID)
+      LEFT JOIN STATEREGION ON (CITY.STATE_ID = STATEREGION.ID)
+  `
+
+  if (qPars.UNIT_ID) {
+    sentence += `
+    WHERE CLUNITS.UNIT_ID IN (:UNIT_ID) 
+    `
+  }
+  
+  return sqldb.query<{
+    ID: number
+    UNIT_ID: number
+    DMT_CODE: string
+    DAT_CODE: string
+    NAME: string
+    MANUFACTURER: string
+    MODEL: string
+    INPUT_VOLTAGE: number
+    OUTPUT_VOLTAGE: number
+    NOMINAL_POTENTIAL: number
+    NOMINAL_BATTERY_LIFE: number
+    INPUT_ELECTRIC_CURRENT: number
+    OUTPUT_ELECTRIC_CURRENT: number
+    NOMINAL_BATTERY_CAPACITY: number
+    INSTALLATION_DATE: string
+    PORT: number
+    UNIT_NAME: string
+    CLIENT_NAME: string
+    CITY_NAME: string
+    STATE_UF: string
+  }>(sentence, qPars)
+}
+
+export function getAllNobreakInfoList (qPars: {}) {
+  let sentence = `
+    SELECT DISTINCT
+      NOBREAKS.ID,
+      ASSETS.UNIT_ID,
+      ASSETS.DAT_CODE,
+      ASSETS.NAME,
+      ASSETS.MANUFACTURER,
+      ASSETS.MODEL,
+      ASSETS.INSTALLATION_DATE,
+      NOBREAKS.INPUT_VOLTAGE,
+      NOBREAKS.OUTPUT_VOLTAGE,
+      NOBREAKS.NOMINAL_POTENTIAL,
+      NOBREAKS.NOMINAL_BATTERY_LIFE,
+      DMTS_NOBREAKS.PORT,
+      CLUNITS.UNIT_NAME,
+      DEVICES.DEVICE_CODE AS DMT_CODE,
+      CITY.NAME AS CITY_NAME,
+      STATEREGION.NAME AS STATE_UF,
+      CLIENTS.NAME AS CLIENT_NAME
+  `
+  sentence += `
+  FROM
+    NOBREAKS
+    INNER JOIN ASSETS ON (NOBREAKS.ASSET_ID = ASSETS.ID)
+    LEFT JOIN CLUNITS ON (CLUNITS.UNIT_ID = ASSETS.UNIT_ID)
+    LEFT JOIN CLIENTS ON (CLIENTS.CLIENT_ID = CLUNITS.CLIENT_ID)
+    LEFT JOIN DMTS_NOBREAKS ON (DMTS_NOBREAKS.NOBREAK_ID = NOBREAKS.ID)
+    LEFT JOIN DMTS ON (DMTS_NOBREAKS.DMT_ID = DMTS.ID)
+    LEFT JOIN DEVICES ON (DMTS.DEVICE_ID = DEVICES.ID)
+    LEFT JOIN CITY ON (CLUNITS.CITY_ID = CITY.CITY_ID)
+    LEFT JOIN STATEREGION ON (CITY.STATE_ID = STATEREGION.ID)
+  `
+  
+  return sqldb.query<{
+    ID: number
+    UNIT_ID: number
+    DMT_CODE: string
+    DAT_CODE: string
+    NAME: string
+    MANUFACTURER: string
+    MODEL: string
+    INPUT_VOLTAGE: number
+    OUTPUT_VOLTAGE: number
+    NOMINAL_POTENTIAL: number
+    NOMINAL_BATTERY_LIFE: number
+    INSTALLATION_DATE: string
+    PORT: number
+    UNIT_NAME: string
+    CLIENT_NAME: string
+    CITY_NAME: string
+    STATE_UF: string
+  }>(sentence, qPars)
+}

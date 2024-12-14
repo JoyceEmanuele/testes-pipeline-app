@@ -31,13 +31,36 @@ jobs:
           IMAGE_TAG: "v${{ github.run_number }}"  # Define a tag única para cada build
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
-          docker build -t gcr.io/$GCP_PROJECT_ID/app-teste:${IMAGE_TAG} .
-          docker push gcr.io/$GCP_PROJECT_ID/app-teste:${IMAGE_TAG}
+          cp configfile_example.ts configfile.ts
+          cp serviceApiAsync/configfile_example.ts serviceApiAsync/configfile.ts
+          cp serviceAuth/configfile_example.ts serviceAuth/configfile.ts
+          cp serviceBGTasks/configfile_example.ts serviceBGTasks/configfile.ts
+          cp serviceGateway/configfile_example.ts serviceGateway/configfile.ts
+          cp serviceHealth/configfile_example.ts serviceHealth/configfile.ts
+          cp serviceInvoice/configfile_example.ts serviceInvoice/configfile.ts
+          cp serviceRealtime/configfile_example.ts serviceRealtime/configfile.ts
+          cp serviceSWDocs/configfile_example.ts serviceSWDocs/configfile.ts
+          cp serviceTelegram/configfile_example.ts serviceTelegram/configfile.ts
+          docker build -t gcr.io/$GCP_PROJECT_ID/apiasync-teste:${IMAGE_TAG} -f Dockerfile.apiasync .
+          docker push gcr.io/$GCP_PROJECT_ID/apiasync-teste:${IMAGE_TAG}
+          docker image rm  gcr.io/$GCP_PROJECT_ID/apiasync-teste:${IMAGE_TAG}
+          docker build -t gcr.io/$GCP_PROJECT_ID/auth-teste:${IMAGE_TAG} -f Dockerfile.auth .
+          docker push gcr.io/$GCP_PROJECT_ID/auth-teste:${IMAGE_TAG}
+          docker image rm  gcr.io/$GCP_PROJECT_ID/auth-teste:${IMAGE_TAG}
+          docker build -t gcr.io/$GCP_PROJECT_ID/bgtasks-teste:${IMAGE_TAG} -f Dockerfile.bgtasks .
+          docker push gcr.io/$GCP_PROJECT_ID/bgtasks-teste:${IMAGE_TAG}
+          docker image rm  gcr.io/$GCP_PROJECT_ID/bgtasks-teste:${IMAGE_TAG}
+          docker build -t gcr.io/$GCP_PROJECT_ID/health-teste:${IMAGE_TAG} -f Dockerfile.health .
+          docker push gcr.io/$GCP_PROJECT_ID/health-teste:${IMAGE_TAG}
+          docker image rm  gcr.io/$GCP_PROJECT_ID/health-teste:${IMAGE_TAG}
+          docker build -t gcr.io/$GCP_PROJECT_ID/realtime-teste:${IMAGE_TAG} -f Dockerfile.realtime .
+          docker push gcr.io/$GCP_PROJECT_ID/realtime-teste:${IMAGE_TAG}
+          docker image rm  gcr.io/$GCP_PROJECT_ID/realtime-teste:${IMAGE_TAG}
 
       - name: Checkout Manifest Repository
         uses: actions/checkout@v2
         with: 
-          repository: JoyceEmanuele/testes-pipeline # Nome do repositório de manifestos
+          repository: dielenergia/manifests-kubernetes/tree/main/apiserverr # Nome do repositório de manifestos
           token: ${{ secrets.GIT_TOKEN }}
           path: manifest-repo
 
@@ -53,7 +76,11 @@ jobs:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE_TAG: "v${{ github.run_number }}"
         run: |
-          sed -i "s|image: gcr.io/.*/app-teste:.*|image: gcr.io/$GCP_PROJECT_ID/app-teste:${IMAGE_TAG}|g" manifest-repo/deployment-app.yaml
+          sed -i "s|image: gcr.io/.*/apiasync.*|image: gcr.io/$GCP_PROJECT_ID/apiasync-teste:${IMAGE_TAG}|g" manifest-repo/apiserver/apiasync-deployment.yaml
+          sed -i "s|image: gcr.io/.*/auth.*|image: gcr.io/$GCP_PROJECT_ID/auth-teste:${IMAGE_TAG}|g" manifest-repo/apiserver/auth-deployment.yaml
+          sed -i "s|image: gcr.io/.*/bgtasks.*|image: gcr.io/$GCP_PROJECT_ID/bgtasks-teste:${IMAGE_TAG}|g" manifest-repo/apiserver/bgtasks-deployment.yaml
+          sed -i "s|image: gcr.io/.*/health.*|image: gcr.io/$GCP_PROJECT_ID/health-teste:${IMAGE_TAG}|g" manifest-repo/apiserver/health-deployment.yaml
+          sed -i "s|image: gcr.io/.*/realtime.*|image: gcr.io/$GCP_PROJECT_ID/realtime-teste:${IMAGE_TAG}|g" manifest-repo/apiserver/realtime-deployment.yaml
 
       - name: Commit and Push Manifest Update
         working-directory: manifest-repo

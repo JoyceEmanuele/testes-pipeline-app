@@ -1,0 +1,8 @@
+CREATE TABLE UnitInvoices(
+    unit_id string,
+    invoice_date string,
+    invoice string,
+
+    partKey(unit_id),
+    sortKey(invoice_date)
+)

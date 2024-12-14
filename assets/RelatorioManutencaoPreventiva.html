@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;500&display=swap" rel="stylesheet">
+  <title>Document</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;500&display=swap');
+    @page {
+      margin: 0;
+    }
+    body {
+      zoom: 0.66;
+
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+
+      font-family: Inter, sans-serif;
+      color: #181842;
+    }
+
+    header {
+      width: 100%;
+      background-color: #0F0F38;
+      position: fixed;
+      top: 0;
+      z-index: 2;
+      
+    }
+    footer {
+      width: 100%;
+      background-color: #0F0F38;
+      position: fixed;
+      bottom: 0;
+    }
+
+    .header-space {
+      height: 130px;
+    }
+    .footer-space {
+      height: 120px;
+    }
+
+  </style>
+</head>
+
+<body>
+  <header>
+    <div style="display: flex; padding: 20px 112px; height: 90px; justify-content: space-between; align-items: center;">
+      <div style="display: flex; flex-direction: column;">
+        <span style="font-size: 24px; color: white; font-family: Inter; font-weight: bold;">Relatório de Manutenção Preventiva</span>
+        <span style="font-size: 14px; color:  #00FF9B; font-family: sans-serif; font-weight: 500;">26 de junho de 2022, às 13:32h $DATE$</span>
+      </div>
+      <img border="0" style="max-height: 31px;" src="https://dl-dielenergia-com.s3.sa-east-1.amazonaws.com/imgs/Diel_Logo_Color_Padrao.png" alt="logo"> 
+
+    </div>
+  </header>
+
+  <div style="width: 100%; table-layout: fixed;">
+    <div class="header-space">&nbsp;</div>
+
+    <div id="overview" style="padding: 20px 60px; line-height: 28px; color: black;">
+
+      <!-- VISÃO GERAL -->
+      <div style="display: flex; justify-content: space-between;">
+        <div style="display: flex; align-items: flex-start;">      
+          <img border="0" src="./images/info_unit.svg" alt="" height="24px" style="margin-top: 4px; margin-right: 10px;">
+          <div style="display: flex; flex-direction: column;" >
+            <span style="font-family: Inter; font-weight: bold; font-size: 20px;">001-1982 - SANTO ANTONIO DE JESUS $UNIT_NAME$</span>
+            <span style="font-size: 14px;">Visão Geral</span>
+          </div>
+        </div> 
+      </div>
+
+      <!-- TOTAL DE MAQUINAS -->
+      <div style=" display: flex; justify-content: space-between; align-items: center; width: 650px; border: 1px solid rgba(215, 215, 215, 0.72); border-radius: 16px; margin-bottom: 20px; margin-top: 20px; margin-inline: auto; padding: 20px 40px;">
+        <div style="display: flex; gap: 22px;">
+          <div style="display: flex; flex-direction: column; font-size: 14px; line-height: 16px;">
+            <b>Total</b>
+            <span>Máquinas</span>
+          </div>
+          <b style="font-size: 40px;">11</b>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 2fr 7fr; width: 240px; height: 36px; border-radius: 10px;">
+          <div style="border-radius: 10px 0px 0px 10px; background-color: #E00030;"></div>
+          <div style="background-color: #FF4C00;"></div>
+          <div style="border-radius: 0px 10px 10px 0px; background-color: #5AB365;"></div>
+        </div>
+
+        <div style="display: flex; gap: 32px;">
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <img src="./images/health_correct.svg" width="40px">
+            <span></span>
+            <b style="font-size: 22px; line-height: 48px;">7</b>
+          </div>  
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <img src="./images/health_urgent.svg" width="40px">
+            <span></span>
+            <b style="font-size: 22px; line-height: 48px;">2</b>
+          </div>             
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <img src="./images/health_risk.svg" width="40px">
+            <span></span>
+            <b style="font-size: 22px; line-height: 48px;">2</b>
+          </div>           
+                   
+        </div>     
+      </div>
+
+      <div style="display: flex; justify-content: space-between; padding: 0px 30px;">
+        <div style="display: flex; flex-direction: column;" >
+          <b style="font-size: 14px;">Unidade</b>
+          <span style="width: 185px; font-size: 12px; line-height: 16px;">001-1982 - SANTO ANTONIO DE JESUS $UNIT_NAME$</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column;" >
+          <b style="font-size: 14px;">Endereço</b>
+          <span style="width: 200px; font-size: 12px; line-height: 16px;">Rua Machado de Assis, 210B Madureira - 20760-098</span>
+        </div>
+        
+        <div style="display: flex; flex-direction: column;" >
+          <b style="font-size: 14px;">Localização</b>
+          <span style="width: 185px; font-size: 12px; line-height: 16px;">Rio de Janeiro / RJ $CITY_STATE$</span>
+        </div>
+        <div style="display: flex; flex-direction: column;" >
+          <b style="font-size: 14px;">Período</b>
+          <span style="width: 185px; font-size: 12px; line-height: 16px;">26/01/2022 a 26/06/2022 $PERIOD$</span>
+        </div>
+      </div>
+
+    </div>
+         
+      <!-- MÁQUINAS -->
+    <div style="break-inside: auto;">          
+      <div id="machinesHeader" style="display: flex; align-items: center; padding: 12px 60px; border-top: 0.8px solid rgba(202, 202, 202, 0.61);">
+        <img border="0" src="./images/machine_unit.svg" alt="" height="24px" style="margin-top: 4px; margin-right: 10px;">
+        <h2 style="font-size: 20px;">Máquinas</h2>            
+      </div>
+
+      <!-- Informações de uma máquina -->
+      <div id="machine" style="background-color: #363BC4; display: flex; padding: 26px 75px 180px; gap: 42px;">
+        <img src="./images/qrCode.svg" alt="qrcode" width="132px" >
+        <div style="display: flex; flex-direction: column;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 12px; color: white; font-weight: 700;">Máquina</span>
+            <span style="font-size: 14px; color: white; font-weight: 700;">Split-Piso Teto (7,5TR) - Santander Área Técnica - Bloco 02 - CT02 Corredor 03 - Loja A - Bloco 02 - Pavimento 003 C</span>
+          </div>
+
+          <div style="border-top: 0.8px solid rgba(255, 255, 255, 0.1); margin-top: 14px; margin-bottom: 22px;">
+          </div>
+
+          <div style="display: flex; justify-content: space-between;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 12px; color: white; font-weight: 700;">Fabricante</span>
+              <span style="font-size: 14px; color: white;">Carrier</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 12px; color: white; font-weight: 700;">Modelo</span>
+              <span style="font-size: 14px; color: white;"> RCP075C5L</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 12px; color: white; font-weight: 700;">Resumo da Máquina</span>
+              <span style="display: flex; align-items: center; font-size: 20px; font-weight: 700; color: white;"> <img border="0" src="./images/health_urgent.svg" alt="" height="24px" style="margin-top: 4px; margin-right: 10px;">
+              2 </span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 12px; color: white; font-weight: 700;">Consumo de Energia Total <b style="font-weight: 400;">Média Diária </b>  </span>
+              <span style="font-size: 20px; font-weight: 700; color: white;">12.692 <b style="font-size: 20px; font-weight: 400; color: rgba(255, 255, 255, 0.5);">kWh</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ativos -->
+      <div style="padding-inline: 75px; padding-bottom: 26px; display: flex; flex-direction: column; gap: 26px; position: relative; bottom: 160px;">
+        
+        <!-- Ativo -->
+        <div  style="padding: 12px 40px; background-color: white; border-radius: 8px; border:1px solid rgba(215, 215, 215, 0.72);display: flex; flex-direction: column; gap: 14px;">
+
+          <!-- Parte 1 -->
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <b style="font-size: 12px; line-height: 14px;">Ativo</b>
+            <b style="font-size: 14px; line-height: 18px;">Split-Piso Teto (7,5TR) - Santander Área Técnica - Bloco 02 - CT02 Corredor 03 - Condensadora 01</b>
+          </div>
+
+          <div style="border-top: 0.8px solid rgba(215, 215, 215, 0.61);"></div>
+
+          <!-- Parte 2 -->
+          <div style="display: flex; gap: 50px">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <b style="font-size: 12px; line-height: 14px;">DEV ID</b>
+              <span style="font-size: 12px; line-height: 14px;">DAT102205121 / DAC202205128</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <b style="font-size: 12px; line-height: 14px;">Laudo Técnico</b>
+              <div style="display: flex; gap: 12px;">
+                <img src="./images/health_urgent.svg" width="32px" alt="">
+                <div style="display: flex; flex-direction: column;">
+                  <b style="font-size: 12px; line-height: 14px;">Manutenção Urgente </b>
+                  <span style="font-size: 12px; line-height: 14px;">Sistema Sem Fluído Refrigerante</span>                      
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <b style="font-size: 12px; line-height: 14px;">Possíveis Causas</b>
+              <table>
+                <thead>
+                  <tr>
+                  <td>
+                 </td></tr></thead>
+                 <tbody style=" margin: 0; display: flex; flex-wrap: wrap; flex-direction: column; height: 50px;">                   
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                 </tbody>
+             </table>
+            </div>
+          </div>
+
+          <div style="border-top: 0.8px solid rgba(215, 215, 215, 0.61);"></div>
+
+
+          <!-- Parte 3 -->
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <b style="font-size: 12px; line-height: 14px;">Média Diária <span style="font-weight: 400; font-size: 10px; color: #615E5E;">26/01/2022 a 26/06/2022 $PERIOD$</span></b>
+            <div style="display: flex; align-items: start; gap: 60px;">
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Pressão de Trabalho</b>
+                <b style="font-size: 18px; line-height: 32px;">6,6 <span style="font-weight: 400; color: 
+                  #9C9C9C;">PSI</span></b>
+              </div>
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Temperaturas</b>
+                <div style="display: flex; gap: 26px;">
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">25,6<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Ambiente</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">11,6<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Sucção</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">11,6<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Líquido</span>
+                  </div>                  
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Número de Partidas</b>
+                <b style="font-size: 18px; line-height: 32px;">122</b>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Tempo de Uso</b>
+                <b style="font-size: 18px; line-height: 32px;">12:38 <span style="font-weight: 400; color: 
+                  #9C9C9C;">h</span></b>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Consumo de Energia</b>
+                <b style="font-size: 18px; line-height: 32px;">4.692 <span style="font-weight: 400; color: 
+                  #9C9C9C;">kWh</span></b>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top: 0.8px solid rgba(215, 215, 215, 0.61);"></div>
+
+           <!-- Parte 4 -->
+           <div style="display: flex; flex-direction: column; gap: 14px;">
+            <b style="font-size: 12px; line-height: 14px;">Leitura Atual <span style="font-weight: 400; font-size: 10px; color: #615E5E;">26/01/2022 a 26/06/2022 $PERIOD$</span></b>
+            <div style="display: flex; align-items: start; gap: 60px;">
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Pressão de Trabalho</b>
+                <b style="font-size: 18px; line-height: 32px;">4,6 <span style="font-weight: 400; color: 
+                  #9C9C9C;">PSI</span></b>
+              </div>
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Temperaturas</b>
+                <div style="display: flex; gap: 26px;">
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">24,2<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Ambiente</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">8,3<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Sucção</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">9,4<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Líquido</span>
+                  </div>                  
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Número de Partidas</b>
+                <b style="font-size: 18px; line-height: 32px;">6</b>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Tempo de Uso</b>
+                <b style="font-size: 18px; line-height: 32px;">3:38 <span style="font-weight: 400; color: 
+                  #9C9C9C;">h</span></b>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Consumo de Energia</b>
+                <b style="font-size: 18px; line-height: 32px;">346 <span style="font-weight: 400; color: 
+                  #9C9C9C;">kWh</span></b>
+              </div>
+            </div>
+          </div>
+
+
+         
+
+        </div>
+
+        <!-- Ativo -->
+        <div  style="padding: 12px 40px; background-color: white; border-radius: 8px; border:1px solid rgba(215, 215, 215, 0.72);display: flex; flex-direction: column; gap: 14px;">
+
+          <!-- Parte 1 -->
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <b style="font-size: 12px; line-height: 14px;">Ativo</b>
+            <b style="font-size: 14px; line-height: 18px;">Split-Piso Teto (7,5TR) - Santander Área Técnica - Bloco 02 - CT02 Corredor 03 - Condensadora 01</b>
+          </div>
+
+          <div style="border-top: 0.8px solid rgba(215, 215, 215, 0.61);"></div>
+
+          <!-- Parte 2 -->
+          <div style="display: flex; gap: 50px">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <b style="font-size: 12px; line-height: 14px;">DEV ID</b>
+              <span style="font-size: 12px; line-height: 14px;">DAT102205121 / DAC202205128</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <b style="font-size: 12px; line-height: 14px;">Laudo Técnico</b>
+              <div style="display: flex; gap: 12px;">
+                <img src="./images/health_urgent.svg" width="32px" alt="">
+                <div style="display: flex; flex-direction: column;">
+                  <b style="font-size: 12px; line-height: 14px;">Manutenção Urgente </b>
+                  <span style="font-size: 12px; line-height: 14px;">Sistema Sem Fluído Refrigerante</span>                      
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <b style="font-size: 12px; line-height: 14px;">Possíveis Causas</b>
+              <table>
+                <thead>
+                  <tr>
+                  <td>
+                 </td></tr></thead>
+                 <tbody style=" margin: 0; display: flex; flex-wrap: wrap; flex-direction: column; height: 50px;">                   
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                    <tr style="line-height: 0px;">
+                     <td>
+                       <span style="margin-right:10px; font-size: 12px; line-height: 10px;">• Vazamento do Fluído Refrigerante</span>
+                     </td>
+                   </tr>
+                 </tbody>
+             </table>
+            </div>
+          </div>
+
+          <div style="border-top: 0.8px solid rgba(215, 215, 215, 0.61);"></div>
+
+
+          <!-- Parte 3 -->
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <b style="font-size: 12px; line-height: 14px;">Média Diária <span style="font-weight: 400; font-size: 10px; color: #615E5E;">26/01/2022 a 26/06/2022 $PERIOD$</span></b>
+            <div style="display: flex; align-items: start; gap: 60px;">
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Pressão de Trabalho</b>
+                <b style="font-size: 18px; line-height: 32px;">6,6 <span style="font-weight: 400; color: 
+                  #9C9C9C;">PSI</span></b>
+              </div>
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Temperaturas</b>
+                <div style="display: flex; gap: 26px;">
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">25,6<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Ambiente</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">11,6<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Sucção</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">11,6<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Líquido</span>
+                  </div>                  
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Número de Partidas</b>
+                <b style="font-size: 18px; line-height: 32px;">122</b>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Tempo de Uso</b>
+                <b style="font-size: 18px; line-height: 32px;">12:38 <span style="font-weight: 400; color: 
+                  #9C9C9C;">h</span></b>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Consumo de Energia</b>
+                <b style="font-size: 18px; line-height: 32px;">4.692 <span style="font-weight: 400; color: 
+                  #9C9C9C;">kWh</span></b>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top: 0.8px solid rgba(215, 215, 215, 0.61);"></div>
+
+           <!-- Parte 4 -->
+           <div style="display: flex; flex-direction: column; gap: 14px;">
+            <b style="font-size: 12px; line-height: 14px;">Leitura Atual <span style="font-weight: 400; font-size: 10px; color: #615E5E;">26/01/2022 a 26/06/2022 $PERIOD$</span></b>
+            <div style="display: flex; align-items: start; gap: 60px;">
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Pressão de Trabalho</b>
+                <b style="font-size: 18px; line-height: 32px;">4,6 <span style="font-weight: 400; color: 
+                  #9C9C9C;">PSI</span></b>
+              </div>
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Temperaturas</b>
+                <div style="display: flex; gap: 26px;">
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">24,2<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Ambiente</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">8,3<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Sucção</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <b style="font-size: 18px;">9,4<span style="font-weight: 400; color: 
+                      #9C9C9C;">ºC</span></b>
+                    <span style="font-size: 10px;">Líquido</span>
+                  </div>                  
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Número de Partidas</b>
+                <b style="font-size: 18px; line-height: 32px;">6</b>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Tempo de Uso</b>
+                <b style="font-size: 18px; line-height: 32px;">3:38 <span style="font-weight: 400; color: 
+                  #9C9C9C;">h</span></b>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <b style="font-size: 12px; line-height: 14px;">Consumo de Energia</b>
+                <b style="font-size: 18px; line-height: 32px;">346 <span style="font-weight: 400; color: 
+                  #9C9C9C;">kWh</span></b>
+              </div>
+            </div>
+          </div>
+
+
+         
+
+        </div>        
+        
+      </div>     
+  
+    </div>
+
+  </div>
+
+  <footer>
+      <div style="display: flex; flex-direction: column; padding-left: 65px; padding-right: 112px; font-size: 75%; padding: 0px 112px; height: 120px; justify-content: center;"> 
+        <div style="padding-bottom: 10px; display: flex; align-items: center;">
+          <img src="./icons/localtag@2x.png" height="20px" style="margin-right: 5px;">
+          <span style="color: white; font-family: 'Inter',sans-serif;">&nbsp;São Paulo</span>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">            
+          <div style="color: white; font-family: 'Inter',sans-serif; ">
+            Av. Dr. Cardoso de Melo, 1608 <br>
+            11° andar, Vila Olímpia, São Paulo - SP
+          </div>
+          
+          <span style="font-family:'Inter', sans-serif; color: white;">
+            Para eventuais dúvidas, ligue para <b style="color: #00FF9B;"> (21) 97593-3367</b>
+          </span>
+          
+          <img style="max-height: 31px;" src="https://dl-dielenergia-com.s3.sa-east-1.amazonaws.com/imgs/Diel_Logo_Color_Padrao.png" alt="logo">
+        </div>           
+      </div>
+  </footer>
+
+</body>
+</html>
+

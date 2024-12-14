@@ -1,0 +1,13 @@
+[Unit]
+Description=Telegram service for Dash
+
+[Service]
+Type=simple
+User=diel
+WorkingDirectory=/home/diel/API-Server
+ExecStart=/usr/bin/node /home/diel/API-Server/dist/serviceTelegram/main.js
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,63 @@
+import * as sqldb from '../connectSql'
+import { saveOperationLog, OperationLogData } from '../dbModifLog'
+import { dbLogger } from '../../../srcCommon/helpers/logger'
+
+/* @IFHELPER:FUNC getCommandsList = SELECT
+
+  FROM NEXUS_II_COMMANDS
+
+  SELECT NEXUS_II_COMMANDS.COMMAND,
+  SELECT NEXUS_II_COMMANDS.SYS_ID,
+  SELECT NEXUS_II_COMMANDS.ADDRESS,
+  SELECT NEXUS_II_COMMANDS.DESCRIPTION,
+  SELECT NEXUS_II_COMMANDS.IP,
+  SELECT NEXUS_II_COMMANDS.ID,
+  SELECT NEXUS_II_COMMANDS.SIZE,
+  SELECT NEXUS_II_COMMANDS.FUNC_ID,
+  SELECT NEXUS_II_COMMANDS.R_W,
+  SELECT NEXUS_II_COMMANDS.UNIT,
+  SELECT NEXUS_II_COMMANDS.FORMULA,
+  SELECT NEXUS_II_COMMANDS.ALIAS,
+  SELECT NEXUS_II_COMMANDS.HAS_SIGNAL
+*/
+export function getCommandsList (qPars: {
+}) {
+  let sentence = `
+    SELECT
+    NEXUS_II_COMMANDS.COMMAND,
+    NEXUS_II_COMMANDS.SYS_ID,
+    NEXUS_II_COMMANDS.ADDRESS,
+    NEXUS_II_COMMANDS.DESCRIPTION,
+    NEXUS_II_COMMANDS.IP,
+    NEXUS_II_COMMANDS.ID,
+    NEXUS_II_COMMANDS.SIZE,
+    NEXUS_II_COMMANDS.FUNC_ID,
+    NEXUS_II_COMMANDS.R_W,
+    NEXUS_II_COMMANDS.UNIT,
+    NEXUS_II_COMMANDS.FORMULA,
+    NEXUS_II_COMMANDS.ALIAS,
+    NEXUS_II_COMMANDS.HAS_SIGNAL
+  `
+
+  sentence += `
+    FROM
+      NEXUS_II_COMMANDS
+    ORDER BY CAST(SUBSTRING(COMMAND, 4, 3) AS UNSIGNED)
+  `
+
+  return sqldb.query<{
+    COMMAND: string
+    SYS_ID: number
+    ADDRESS: number
+    DESCRIPTION: string
+    IP: string
+    ID: number
+    SIZE: number
+    FUNC_ID: number
+    R_W: string
+    UNIT: string
+    FORMULA: string
+    ALIAS: string
+    HAS_SIGNAL: string
+  }>(sentence, qPars)
+}
