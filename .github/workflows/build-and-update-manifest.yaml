@@ -82,6 +82,13 @@ jobs:
           sed -i "s|image: gcr.io/.*/health.*|image: gcr.io/$GCP_PROJECT_ID/health-teste:${IMAGE_TAG}|g" manifest-repo/apiserver/health-deployment.yaml
           sed -i "s|image: gcr.io/.*/realtime.*|image: gcr.io/$GCP_PROJECT_ID/realtime-teste:${IMAGE_TAG}|g" manifest-repo/apiserver/realtime-deployment.yaml
 
+      - name: Install Dependencies
+        run: npm install js-yaml
+
+      - name: Update ConfigMap
+        run: |
+          node scripts/merge-configfiles.js
+
       - name: Commit and Push Manifest Update
         working-directory: manifest-repo
         run: |
