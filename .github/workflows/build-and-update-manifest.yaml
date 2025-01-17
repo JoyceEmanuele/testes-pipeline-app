@@ -87,7 +87,7 @@ jobs:
 
       - name: Update ConfigMap
         run: |
-          node scripts/merge-configfiles.js
+          node devops/merge-configfiles.js
 
       - name: Commit and Push Manifest Update
         working-directory: manifest-repo
