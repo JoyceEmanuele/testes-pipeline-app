@@ -3,8 +3,8 @@ const path = require('path');
 const yaml = require('js-yaml');
 
 // Caminhos dos arquivos
-const configExamplePath = path.join(__dirname, 'configfile_example.ts');
-const configYamlPath = path.join(__dirname, 'manifest-repo/apiserver/config-principal.yaml');
+const configExamplePath = path.join(__dirname, '../configfile_example.ts');
+const configYamlPath = path.join(__dirname, '../manifest-repo/apiserver/config-principal.yaml');
 
 // Função para extrair campos do configfile_example.ts
 function parseConfigExample(fileContent) {
